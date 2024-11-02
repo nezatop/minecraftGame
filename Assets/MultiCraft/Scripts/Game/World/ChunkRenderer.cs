@@ -16,6 +16,7 @@ namespace MultiCraft.Scripts.Game.World
         public Mesh chunkMesh;
         
         private List<Vector3> vertices = new List<Vector3>();
+        private List<Vector2> uvs = new List<Vector2>();
         private List<int> triangles = new List<int>();
 
         private void Start()
@@ -29,6 +30,7 @@ namespace MultiCraft.Scripts.Game.World
         {
             vertices.Clear();
             triangles.Clear();
+            uvs.Clear();
             
             for (int y = 0; y < ChunkHeight; y++)
             {
@@ -43,6 +45,7 @@ namespace MultiCraft.Scripts.Game.World
             
             chunkMesh.triangles = Array.Empty<int>();
             chunkMesh.vertices = vertices.ToArray();
+            chunkMesh.uv = uvs.ToArray();
             chunkMesh.triangles = triangles.ToArray();
             
             chunkMesh.Optimize();
@@ -59,7 +62,6 @@ namespace MultiCraft.Scripts.Game.World
             ChunkData.Blocks[blockPosition.x, blockPosition.y, blockPosition.z] = block;
             RegenerateMesh();
         }
-
         public void DestroyBlock(Vector3Int blockPosition)
         {
             ChunkData.Blocks[blockPosition.x, blockPosition.y, blockPosition.z] = BlockType.Air;
@@ -176,6 +178,11 @@ namespace MultiCraft.Scripts.Game.World
         }
         private void AddLastVerticesSquare()
         {
+            uvs.Add(new Vector2(0.125f, 0.9375f));
+            uvs.Add(new Vector2(0.125f, 1));
+            uvs.Add(new Vector2(0.1875f, 0.9375f));
+            uvs.Add(new Vector2(0.1875f, 1));
+            
             triangles.Add(vertices.Count - 4);
             triangles.Add(vertices.Count - 3);
             triangles.Add(vertices.Count - 2);
