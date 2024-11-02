@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,13 +13,23 @@ namespace MultiCraft.Scripts.Game.World
         public ChunkData ChunkData;
         public GameWorld ParentWorld;
         
+        public Mesh chunkMesh;
+        
         private List<Vector3> vertices = new List<Vector3>();
         private List<int> triangles = new List<int>();
 
         private void Start()
         {
-            Mesh chunkMesh = new Mesh();
+            chunkMesh = new Mesh();
 
+            RegenerateMesh();
+        }
+
+        private void RegenerateMesh()
+        {
+            vertices.Clear();
+            triangles.Clear();
+            
             for (int y = 0; y < ChunkHeight; y++)
             {
                 for (int x = 0; x < ChunkWidth; x++)
@@ -30,6 +41,7 @@ namespace MultiCraft.Scripts.Game.World
                 }
             }
             
+            chunkMesh.triangles = Array.Empty<int>();
             chunkMesh.vertices = vertices.ToArray();
             chunkMesh.triangles = triangles.ToArray();
             
@@ -40,6 +52,18 @@ namespace MultiCraft.Scripts.Game.World
             
             GetComponent<MeshFilter>().mesh = chunkMesh;
             GetComponent<MeshCollider>().sharedMesh = chunkMesh;
+        }
+
+        public void SpawnBlock(Vector3Int blockPosition, BlockType block)
+        {
+            ChunkData.Blocks[blockPosition.x, blockPosition.y, blockPosition.z] = block;
+            RegenerateMesh();
+        }
+
+        public void DestroyBlock(Vector3Int blockPosition)
+        {
+            ChunkData.Blocks[blockPosition.x, blockPosition.y, blockPosition.z] = BlockType.Air;
+            RegenerateMesh();
         }
         private void GenerateBlock(int x, int y, int z)
         {
