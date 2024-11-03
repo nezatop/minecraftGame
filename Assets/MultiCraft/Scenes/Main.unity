@@ -231,6 +231,7 @@ GameObject:
   m_Component:
   - component: {fileID: 292135358}
   - component: {fileID: 292135357}
+  - component: {fileID: 292135359}
   m_Layer: 0
   m_Name: GameWorld
   m_TagString: Untagged
@@ -250,7 +251,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d83121b069c464aa3de1de0c30855ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ChunkPrefab: {fileID: 1461805695088071563, guid: c1e1624d2d3a37d46987104064e48406, type: 3}
+  chunkPrefab: {fileID: 1461805695088071563, guid: c1e1624d2d3a37d46987104064e48406, type: 3}
+  terrainGenerator: {fileID: 292135359}
 --- !u!4 &292135358
 Transform:
   m_ObjectHideFlags: 0
@@ -266,6 +268,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &292135359
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 292135356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b09731ed0ef3450ea1caff9431d04b3b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
