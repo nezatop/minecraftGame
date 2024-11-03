@@ -11,9 +11,6 @@ namespace MultiCraft.Scripts.Game.World
         public NoiseOctaveSetting DomainWarp;
         public NoiseOctaveSetting CaveNoise;
         
-        public bool IvertCave = false;
-        
-
         [Serializable]
         public class NoiseOctaveSetting
         {
@@ -61,19 +58,14 @@ namespace MultiCraft.Scripts.Game.World
                         if (y < height)
                         {
                             float caveNoiseValue = _caveNoise.GetNoise(x + xOffset, y + yOffset, z + zOffset);
-
+                            
+                            result[x, y, z] = BlockType.Grass;
+                            if (y < height - 1) result[x, y, z] = BlockType.Dirt;
+                            if (y < height-3) result[x, y, z] = BlockType.Stone;
+                            if (y < 2) result[x, y, z] = BlockType.Stone;
                             if (caveNoiseValue > CaveNoise.Amplitude || caveNoiseValue < -CaveNoise.Amplitude) 
                             {
-                                if (IvertCave) 
-                                    result[x, y, z] = BlockType.Stone;
-                                else
                                     result[x, y, z] = BlockType.Air;
-                            }
-                            else
-                            {if (IvertCave) 
-                                    result[x, y, z] = BlockType.Air;
-                                else
-                                    result[x, y, z] = BlockType.Stone;
                             }
                         }
                         else
