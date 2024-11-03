@@ -1,17 +1,21 @@
 ﻿using System;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace MultiCraft.Scripts.Game.World
 {
-    public class TerrainGenerator : MonoBehaviour
+    [CreateAssetMenu(fileName = "World Terrain Generator", menuName = "MultiCraft/World/Terrain Generator")]
+    public class TerrainGenerator : ScriptableObject
     {
         public float BaseHeight = 64f;
-        public NoiseOctaveSettring[] Octaves;
-        public NoiseOctaveSettring DomainWarp;
+        public NoiseOctaveSetting[] Octaves;
+        public NoiseOctaveSetting DomainWarp;
+        public NoiseOctaveSetting CaveNoise;
+        
+        public bool IvertCave = false;
+        
 
         [Serializable]
-        public class NoiseOctaveSettring
+        public class NoiseOctaveSetting
         {
             public FastNoiseLite.NoiseType NoiseType;
             public float Frequency;
@@ -20,12 +24,8 @@ namespace MultiCraft.Scripts.Game.World
         
         private FastNoiseLite[] _noise;
         private FastNoiseLite _warpNoise;
+        private FastNoiseLite _caveNoise;
         
-        private void Awake()
-        {
-           InitializeNoise();
-        }
-
         public void InitializeNoise()
         {
             _noise = new FastNoiseLite[Octaves.Length];
@@ -40,46 +40,51 @@ namespace MultiCraft.Scripts.Game.World
             _warpNoise.SetNoiseType(DomainWarp.NoiseType);
             _warpNoise.SetFrequency(DomainWarp.Frequency);
             _warpNoise.SetDomainWarpAmp(DomainWarp.Amplitude);
+            
+            _caveNoise = new FastNoiseLite();
+            _caveNoise.SetNoiseType(CaveNoise.NoiseType);
+            _caveNoise.SetFrequency(CaveNoise.Frequency);
         }
 
         public BlockType[,,] GenerateTerrain(int xOffset, int yOffset, int zOffset)
         {
-            BlockType[,,] result = new BlockType[ChunkRenderer.ChunkWidth, ChunkRenderer.ChunkHeight,
-                ChunkRenderer.ChunkWidth];
-            
+            BlockType[,,] result = new BlockType[ChunkRenderer.ChunkWidth, ChunkRenderer.ChunkHeight, ChunkRenderer.ChunkWidth];
+    
             for (int x = 0; x < ChunkRenderer.ChunkWidth; x++)
             {
                 for (int z = 0; z < ChunkRenderer.ChunkWidth; z++)
                 {
-                    float height = GetHeight( x + xOffset, z + zOffset);
+                    float height = GetHeight(x + xOffset, z + zOffset);
 
-                    for (int y = 0; y < height; y++)
+                    for (int y = 0; y < ChunkRenderer.ChunkHeight; y++)
                     {
-                        result[x, y, z] = BlockType.Grass;
+                        if (y < height)
+                        {
+                            float caveNoiseValue = _caveNoise.GetNoise(x + xOffset, y + yOffset, z + zOffset);
+
+                            if (caveNoiseValue > CaveNoise.Amplitude || caveNoiseValue < -CaveNoise.Amplitude) 
+                            {
+                                if (IvertCave) 
+                                    result[x, y, z] = BlockType.Stone;
+                                else
+                                    result[x, y, z] = BlockType.Air;
+                            }
+                            else
+                            {if (IvertCave) 
+                                    result[x, y, z] = BlockType.Air;
+                                else
+                                    result[x, y, z] = BlockType.Stone;
+                            }
+                        }
+                        else
+                        {
+                            result[x, y, z] = BlockType.Air;
+                        }
                     }
                 }
             }
 
             return result;
-        }
-        private void GenerateSurface(out BlockType[,,] blocks)
-        {
-            blocks = new BlockType[,,] { };
-        }
-        
-        private void GenerateCave(out BlockType[,,] blocks)
-        {
-            blocks = new BlockType[,,] { };
-        }
-
-        private void GenerateOre(out BlockType[,,] blocks)
-        {
-            blocks = new BlockType[,,] { };
-        }
-        
-        private void GenerateWater(out BlockType[,,] blocks)
-        {
-            blocks = new BlockType[,,] { };
         }
 
         private float GetHeight(float x, float z)

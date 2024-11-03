@@ -22,6 +22,7 @@ namespace MultiCraft.Scripts.Game.World
         void Start()
         {
             _mainCamera = Camera.main;
+            generator.InitializeNoise();
 
             StartCoroutine(Generate(false));
         }
