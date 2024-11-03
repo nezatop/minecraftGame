@@ -59,7 +59,8 @@ namespace MultiCraft.Scripts.Game.World
             var chunkObject = Instantiate(chunkPrefab, new Vector3(xPos, 0, zPos), Quaternion.identity, transform);
             chunkObject.Chunk = chunk;
             chunkObject.parentWorld = this;
-
+            
+            
             chunk.Renderer = chunkObject;
             /*
             ChunkData chunkData = new ChunkData();
@@ -86,6 +87,18 @@ namespace MultiCraft.Scripts.Game.World
             }
 
             CheckInput();
+        }
+        
+        [ContextMenu("Regenerate World")]
+        public void Regenerate()
+        {
+            generator.InitializeNoise();
+            foreach (var chunk in Chunks.Values)
+            {
+                Destroy(chunk.Renderer.gameObject);
+            }
+            Chunks.Clear();
+            StartCoroutine(Generate(false));
         }
 
         // ReSharper disable Unity.PerformanceAnalysis

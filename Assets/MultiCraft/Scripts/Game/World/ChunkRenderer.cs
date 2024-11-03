@@ -29,12 +29,14 @@ namespace MultiCraft.Scripts.Game.World
 
         private void Start()
         {
+            //TODO: при генерации новых чаков у старых отсаеться null
             parentWorld.Chunks.TryGetValue(Chunk.Position + Vector3Int.left, out _leftChunk);
             parentWorld.Chunks.TryGetValue(Chunk.Position + Vector3Int.right, out _rightChunk);
             parentWorld.Chunks.TryGetValue(Chunk.Position + Vector3Int.forward, out _frontChunk);
             parentWorld.Chunks.TryGetValue(Chunk.Position + Vector3Int.back, out _backChunk);
             parentWorld.Chunks.TryGetValue(Chunk.Position + Vector3Int.up, out _topChunk);
             parentWorld.Chunks.TryGetValue(Chunk.Position + Vector3Int.down, out _bottomChunk);
+            
             chunkMesh = new Mesh();
 
             RegenerateMesh();
@@ -42,6 +44,7 @@ namespace MultiCraft.Scripts.Game.World
 
         private void RegenerateMesh()
         {
+            
             _vertices.Clear();
             _uvs.Clear();
             _triangles.Clear();
