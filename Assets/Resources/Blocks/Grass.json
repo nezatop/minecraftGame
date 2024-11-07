@@ -1,0 +1,16 @@
+{
+  "Type": 4,
+  "Hardness": 3,
+  "UvsPixelsOffsetLeftX": 3,
+  "UvsPixelsOffsetLeftY": 15,
+  "UvsPixelsOffsetRightX": 3,
+  "UvsPixelsOffsetRightY": 15,
+  "UvsPixelsOffsetFrontX": 3,
+  "UvsPixelsOffsetFrontY": 15,
+  "UvsPixelsOffsetBackX": 3,
+  "UvsPixelsOffsetBackY": 15,
+  "UvsPixelsOffsetBottomX": 2,
+  "UvsPixelsOffsetBottomY": 15,
+  "UvsPixelsOffsetTopX": 8,
+  "UvsPixelsOffsetTopY": 13
+}
