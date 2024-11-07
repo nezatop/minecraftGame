@@ -1,4 +1,4 @@
-﻿
+﻿using MultiCraft.Scripts.Game.Blocks;
 using MultiCraft.Scripts.Game.World;
 using Unity.Profiling;
 using UnityEngine;
@@ -10,7 +10,7 @@ namespace MultiCraft.Scripts.Game.Chunks
     public class ChunkRenderer : MonoBehaviour
     {
         private ProfilerMarker Meshing = new ProfilerMarker(ProfilerCategory.Loading, "Meshing");
-        
+
         public Chunk Chunk = new Chunk();
 
         public GameWorld ParentWorld;
@@ -23,6 +23,26 @@ namespace MultiCraft.Scripts.Game.Chunks
             ChunkMesh = new Mesh();
 
             GetComponent<MeshFilter>().sharedMesh = ChunkMesh;
+        }
+
+        public void SpawnBlock(Vector3Int position, BlockType blockType)
+        {
+            Chunk.Blocks[position.x, position.y, position.z] = blockType;
+            RegenerateMesh();
+        }
+
+        public BlockType DestroyBlock(Vector3Int position)
+        {
+            var destroyedBlockType = Chunk.Blocks[position.x, position.y, position.z];
+            Chunk.Blocks[position.x, position.y, position.z] = BlockType.Air;
+            RegenerateMesh();
+            
+            return destroyedBlockType;
+        }
+
+        public void RegenerateMesh()
+        {
+            SetMesh(MeshBuilder.GenerateMesh(Chunk));
         }
 
         public static void InitializeTriangles()
@@ -60,9 +80,9 @@ namespace MultiCraft.Scripts.Game.Chunks
 
             int trianglesCount = mesh.Vertices.Length / 4 * 6;
             ChunkMesh.SetIndexBufferParams(trianglesCount, IndexFormat.UInt32);
-            ChunkMesh.SetIndexBufferData(_triangles, 0, 0, trianglesCount, MeshUpdateFlags.DontRecalculateBounds |
-                                                                           MeshUpdateFlags.DontValidateIndices |
-                                                                           MeshUpdateFlags.DontRecalculateBounds);
+            ChunkMesh.SetIndexBufferData(_triangles, 0, 0, trianglesCount,
+                MeshUpdateFlags.DontRecalculateBounds | MeshUpdateFlags.DontValidateIndices |
+                MeshUpdateFlags.DontRecalculateBounds);
 
             ChunkMesh.subMeshCount = 1;
             ChunkMesh.SetSubMesh(0, new SubMeshDescriptor(0, trianglesCount));

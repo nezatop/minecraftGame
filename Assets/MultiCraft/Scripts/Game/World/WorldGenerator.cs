@@ -1,10 +1,12 @@
 ﻿using MultiCraft.Scripts.Game.Blocks;
+using UnityEngine;
 
 namespace MultiCraft.Scripts.Game.World
 {
-    public static class WorldGenerator
+    [CreateAssetMenu(fileName = "WorldGenerator", menuName = "MultiCraft/WorldGenerator")]
+    public class WorldGenerator : ScriptableObject
     {
-        public static BlockType[,,] GenerateWorld(int xOffset, int yOffset, int zOffset, int seed)
+        public BlockType[,,] GenerateWorld(int xOffset, int yOffset, int zOffset, int seed)
         {
             var blocks = new BlockType[GameWorld.ChunkWidth, GameWorld.ChunkHeight, GameWorld.ChunkWidth];
 
@@ -19,7 +21,6 @@ namespace MultiCraft.Scripts.Game.World
                     }
                 }
             }
-            
             return blocks;
         }
     }
