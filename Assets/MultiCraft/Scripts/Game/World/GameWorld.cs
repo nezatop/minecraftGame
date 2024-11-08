@@ -16,7 +16,7 @@ namespace MultiCraft.Scripts.Game.World
         [Header("Game World settings")] public int WorldSize = 1024;
         public const int ChunkWidth = 16;
         public const int ChunkHeight = 256;
-        
+
         public WorldGenerator WorldGenerator;
 
         [Header("Server settings")] public int ViewDistance = 5;
@@ -36,9 +36,10 @@ namespace MultiCraft.Scripts.Game.World
 
         private IEnumerator Generate(bool wait)
         {
+            Debug.Log("Generating world...");
             int loadRadius = ViewDistance + 1;
             var players = _currentPlayersPosition;
-            
+
             List<Chunk> loadingChunks = new List<Chunk>();
             foreach (var playerPosition in players)
             {
@@ -47,11 +48,17 @@ namespace MultiCraft.Scripts.Game.World
                     for (var z = playerPosition.z - loadRadius; z <= playerPosition.z + loadRadius; z++)
                     {
                         var chunkPosition = new Vector3Int(x, 0, z);
+
+                        if (Mathf.Abs(x) > WorldSize || Mathf.Abs(z) > WorldSize)
+                        {
+                            continue;
+                        }
+
                         if (Chunks.ContainsKey(chunkPosition)) continue;
 
                         var chunk = GenerateChunk(chunkPosition);
                         loadingChunks.Add(chunk);
-                        
+
                         if (wait) yield return null;
                     }
                 }
@@ -66,6 +73,12 @@ namespace MultiCraft.Scripts.Game.World
                     for (var z = playerPosition.z - ViewDistance; z <= playerPosition.z + ViewDistance; z++)
                     {
                         var chunkPosition = new Vector3Int(x, 0, z);
+
+                        if (Mathf.Abs(x) > WorldSize || Mathf.Abs(z) > WorldSize)
+                        {
+                            continue;
+                        }
+
                         Chunk chunk = Chunks[chunkPosition];
                         if (chunk.Renderer != null) continue;
                         SpawnChunk(chunk);
@@ -90,10 +103,18 @@ namespace MultiCraft.Scripts.Game.World
 
             Task.Factory.StartNew(() =>
             {
-                chunk.Blocks = WorldGenerator.GenerateWorld(xPos, yPos, zPos, Seed);
-                chunk.State = ChunkState.Generated;
+                try
+                {
+                    chunk.Blocks = WorldGenerator.GenerateWorld(xPos, yPos, zPos, Seed);
+                    chunk.State = ChunkState.Generated;
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError(e);
+                    throw;
+                }
             });
-            
+
             return chunk;
         }
 
@@ -107,7 +128,7 @@ namespace MultiCraft.Scripts.Game.World
             Chunks.TryGetValue(chunk.Position + Vector3Int.back, out chunk.BackChunk);
 
             chunk.State = ChunkState.MeshBuilding;
-            
+
             Task.Factory.StartNew(() =>
             {
                 GeneratedMesh mesh = MeshBuilder.GenerateMesh(chunk);
@@ -119,6 +140,7 @@ namespace MultiCraft.Scripts.Game.World
         private void Start()
         {
             ChunkRenderer.InitializeTriangles();
+            WorldGenerator.InitializeGenerators();
             Players.AddRange(GameObject.FindGameObjectsWithTag("Player"));
             Seed = Random.Range(int.MinValue, int.MaxValue);
 
@@ -161,17 +183,20 @@ namespace MultiCraft.Scripts.Game.World
             if (_currentPlayersPosition.Count == 0)
             {
                 _currentPlayersPosition = playersPosition;
-                StartCoroutine(Generate(wait));
+                playerMoved = true;
             }
 
             for (var i = 0; i < Players.Count; i++)
             {
-                if (playersPosition[i] != _currentPlayersPosition[i])
+                var prevPplayer = _currentPlayersPosition[i];
+                var player = playersPosition[i];
+                if (prevPplayer.x != player.x || prevPplayer.z != player.z)
                     playerMoved = true;
             }
 
             if (playerMoved)
             {
+                Debug.Log(_currentPlayersPosition);
                 _currentPlayersPosition = playersPosition;
                 StartCoroutine(Generate(wait));
             }
@@ -185,24 +210,28 @@ namespace MultiCraft.Scripts.Game.World
             {
                 var chunkOrigin = new Vector3Int(chunkPosition.x, 0, chunkPosition.y) * ChunkWidth;
                 chunkData.Renderer.SpawnBlock(chunkPosition - chunkOrigin, blockType);
-            }else return false;
+            }
+            else return false;
+
             return true;
         }
 
         public BlockType DestroyBlock(Vector3 blockPosition)
         {
             BlockType destroyedBlockType;
-            
+
             var blockWorldPosition = Vector3Int.FloorToInt(blockPosition);
             var chunkPosition = GetChunkContainBlock(blockWorldPosition);
             if (Chunks.TryGetValue(chunkPosition, out var chunkData))
             {
                 var chunkOrigin = new Vector3Int(chunkPosition.x, 0, chunkPosition.y) * ChunkWidth;
                 destroyedBlockType = chunkData.Renderer.DestroyBlock(chunkPosition - chunkOrigin);
-            }else return BlockType.Air;//TODO: Воздух заменить на BlockType.Unknown
+            }
+            else return BlockType.Air; //TODO: Воздух заменить на BlockType.Unknown
+
             return destroyedBlockType;
-        } 
-        
+        }
+
         private Vector3Int GetChunkContainBlock(Vector3Int blockWorldPosition)
         {
             var chunkPosition = new Vector3Int(

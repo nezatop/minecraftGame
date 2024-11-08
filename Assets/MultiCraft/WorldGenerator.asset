@@ -12,3 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba007d7543fc459faa08ef891cb1e986, type: 3}
   m_Name: WorldGenerator
   m_EditorClassIdentifier: 
+  SurfaceGenerator: {fileID: 11400000, guid: d1844e59e2dbc1b4886740570ad69413, type: 2}
+  CaveGenerator: {fileID: 11400000, guid: eafd512b3ab7a09409bc060ca1cc30c4, type: 2}
+  TreeGenerator: {fileID: 11400000, guid: 59042b21abfbb9f49b5b08d77fed0703, type: 2}
