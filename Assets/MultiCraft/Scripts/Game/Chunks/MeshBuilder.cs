@@ -29,7 +29,7 @@ namespace MultiCraft.Scripts.Game.Chunks
             var mesh = new GeneratedMesh();
             mesh.Vertices = vertices.ToArray();
 
-            Vector3 boundsSize = new Vector3(GameWorld.ChunkWidth, maxY, GameWorld.ChunkWidth);
+            Vector3 boundsSize = new Vector3(GameWorld.ChunkWidth, maxY+2, GameWorld.ChunkWidth);
             mesh.Bounds = new Bounds(boundsSize / 2, boundsSize);
             mesh.Chunk = chunk;
 
@@ -106,7 +106,7 @@ namespace MultiCraft.Scripts.Game.Chunks
             vertex.NormalW = 1;
 
             Vector2 Uv1, Uv2, Uv3, Uv4;
-            GetUvs(blockType, Vector3Int.down, out Uv1, out Uv2, out Uv3, out Uv4);
+            GetUvs(blockType, Vector3Int.up, out Uv1, out Uv2, out Uv3, out Uv4);
 
             vertex.Position = new Vector3(0, 1, 0) + blockPosition;
             vertex.Uv = Uv1;
@@ -160,7 +160,7 @@ namespace MultiCraft.Scripts.Game.Chunks
             Vector2 Uv1, Uv2, Uv3, Uv4;
             GetUvs(blockType, Vector3Int.forward, out Uv1, out Uv2, out Uv3, out Uv4);
 
-            vertex.Position = new Vector3(1, 0, 0) + blockPosition;
+            vertex.Position = new Vector3(1, 0, 1) + blockPosition;
             vertex.Uv = Uv1;
             vertices.Add(vertex);
             vertex.Position = new Vector3(1, 1, 1) + blockPosition;
@@ -184,7 +184,7 @@ namespace MultiCraft.Scripts.Game.Chunks
             vertex.NormalW = 1;
 
             Vector2 Uv1, Uv2, Uv3, Uv4;
-            GetUvs(blockType, Vector3Int.down, out Uv1, out Uv2, out Uv3, out Uv4);
+            GetUvs(blockType, Vector3Int.back, out Uv1, out Uv2, out Uv3, out Uv4);
 
             vertex.Position = new Vector3(0, 0, 0) + blockPosition;
             vertex.Uv = Uv1;
