@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using MultiCraft.Scripts.Game.Blocks;
+using MultiCraft.Scripts.Game.World;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace MultiCraft.Scripts.Game.Player
@@ -6,23 +9,50 @@ namespace MultiCraft.Scripts.Game.Player
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
     {
-        public float moveSpeed = 5.0f;  // Скорость движения персонажа
+        public float moveSpeed = 5.0f; // Скорость движения персонажа
         public float jumpHeight = 2.0f; // Высота прыжка
-        public float gravity = -9.81f;  // Сила гравитации
+        public float gravity = -9.81f; // Сила гравитации
 
         private CharacterController controller;
         private Vector3 velocity;
         private bool isGrounded;
+        
+        private GameWorld _gameWorld;
+        [SerializeField]private Camera Camera;
 
+        [Obsolete("Obsolete")]
         private void Start()
         {
             controller = GetComponent<CharacterController>();
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            
+            _gameWorld = FindObjectOfType<GameWorld>();
         }
 
         private void Update()
         {
+            if (Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(0))
+            {
+                bool isDestroying = Input.GetMouseButtonDown(0);
+                Ray ray = Camera.ViewportPointToRay(new Vector3(0.5f, 0.5f));
+                if (Physics.Raycast(ray, out var hitInfo))
+                {
+                    Vector3 blockPosition = isDestroying 
+                        ? hitInfo.point - hitInfo.normal * 0.5f 
+                        : hitInfo.point + hitInfo.normal * 0.5f;
+
+                    if (isDestroying)
+                    {
+                        _gameWorld.DestroyBlock(blockPosition);
+                    }
+                    else
+                    {
+                        _gameWorld.SpawnBlock(blockPosition, BlockType.Stone); // Укажите тип блока
+                    }
+                }
+            }
+
             // Проверяем, находится ли персонаж на земле
             isGrounded = controller.isGrounded;
 

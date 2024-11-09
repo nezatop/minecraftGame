@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf9cc1f9daad40d693231052042ee555, type: 3}
   m_Name: Tree Generator
   m_EditorClassIdentifier: 
-  TreeFrequency: 0.75
+  TreeFrequency: 0.61
   Octaves:
-  - NoiseType: 3
-    Frequency: 5.5
+  - NoiseType: 1
+    Frequency: 7.41
     Amplitude: 2

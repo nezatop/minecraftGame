@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Cave Generator
   m_EditorClassIdentifier: 
   Octaves:
-    NoiseType: 2
-    Frequency: 0.085
+    NoiseType: 4
+    Frequency: 1.15
     Amplitude: 2
-  CaveFrequency: -0.5
+  CaveFrequency: 0.2

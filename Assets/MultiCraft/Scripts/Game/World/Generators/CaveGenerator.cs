@@ -29,7 +29,7 @@ namespace MultiCraft.Scripts.Game.World.Generators
                     for (int y = 0; y < surfaceHeight[x, z] + 1; y++)
                     {
                         float caveNoiseValue = _caveNoise.GetNoise(x + xOffset, y + yOffset, z + zOffset);
-                        if (caveNoiseValue > CaveFrequency)
+                        if (caveNoiseValue < -CaveFrequency || caveNoiseValue > CaveFrequency)
                         {
                             if (y > 0)
                                 blocks[x, y, z] = BlockType.Air;

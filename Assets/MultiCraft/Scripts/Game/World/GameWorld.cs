@@ -26,6 +26,7 @@ namespace MultiCraft.Scripts.Game.World
         [Header("Generating settings")] public int Seed = 0;
         public ChunkRenderer ChunkPrefab;
 
+        [Header("Player settings")] public GameObject PlayerPrefab;
 
         public List<GameObject> Players = new List<GameObject>();
         private List<Vector3Int> _currentPlayersPosition = new List<Vector3Int>();
@@ -34,9 +35,11 @@ namespace MultiCraft.Scripts.Game.World
 
         private ConcurrentQueue<GeneratedMesh> _meshingResults = new ConcurrentQueue<GeneratedMesh>();
 
+        private Vector3 _spawnPosition;
+        private bool _playerSpawned = false;
+        
         private IEnumerator Generate(bool wait)
         {
-            Debug.Log("Generating world...");
             int loadRadius = ViewDistance + 1;
             var players = _currentPlayersPosition;
 
@@ -145,11 +148,30 @@ namespace MultiCraft.Scripts.Game.World
             Seed = Random.Range(int.MinValue, int.MaxValue);
 
             BlockDataBase.InitializeBlockDataBase();
-            CheckPlayers(false);
+
+            _spawnPosition = Vector3Int.zero;
+            _currentPlayersPosition.Add(GetChunkContainBlock(Vector3Int.FloorToInt(_spawnPosition)));
+            StartCoroutine(Generate(false));
         }
 
         private void Update()
         {
+            if (_meshingResults.Count == 0 && _playerSpawned == false) 
+            {
+                Vector3Int playerPosition = GetChunkContainBlock(Vector3Int.FloorToInt(_spawnPosition));
+                Chunk chunk = Chunks[playerPosition];
+                if (chunk.State == ChunkState.Active)
+                {
+                    int height = ChunkHeight - 1;
+                    while (chunk.Blocks[5, height - 1, 5] == BlockType.Air) height--;
+
+                    SpawnPlayer(new Vector3Int(5, height, 5));
+
+                    _playerSpawned = true;
+                    _currentPlayersPosition.Clear();
+                }
+            }
+            
             CheckPlayers(true);
 
             if (_meshingResults.TryDequeue(out GeneratedMesh mesh))
@@ -196,7 +218,6 @@ namespace MultiCraft.Scripts.Game.World
 
             if (playerMoved)
             {
-                Debug.Log(_currentPlayersPosition);
                 _currentPlayersPosition = playersPosition;
                 StartCoroutine(Generate(wait));
             }
@@ -209,7 +230,7 @@ namespace MultiCraft.Scripts.Game.World
             if (Chunks.TryGetValue(chunkPosition, out var chunkData))
             {
                 var chunkOrigin = new Vector3Int(chunkPosition.x, 0, chunkPosition.y) * ChunkWidth;
-                chunkData.Renderer.SpawnBlock(chunkPosition - chunkOrigin, blockType);
+                chunkData.Renderer.SpawnBlock(blockWorldPosition - chunkOrigin, blockType);
             }
             else return false;
 
@@ -225,11 +246,26 @@ namespace MultiCraft.Scripts.Game.World
             if (Chunks.TryGetValue(chunkPosition, out var chunkData))
             {
                 var chunkOrigin = new Vector3Int(chunkPosition.x, 0, chunkPosition.y) * ChunkWidth;
-                destroyedBlockType = chunkData.Renderer.DestroyBlock(chunkPosition - chunkOrigin);
+                destroyedBlockType = chunkData.Renderer.DestroyBlock(blockWorldPosition  - chunkOrigin);
             }
             else return BlockType.Air; //TODO: Воздух заменить на BlockType.Unknown
 
             return destroyedBlockType;
+        }
+
+        public void SpawnPlayer(Vector3 spawnPosition)
+        {
+            if (PlayerPrefab == null)
+            {
+                Debug.LogError("PlayerPrefab is not set in GameWorld!");
+                return;
+            }
+
+            GameObject player = Instantiate(PlayerPrefab, spawnPosition, Quaternion.identity);
+
+            Players.Add(player);
+
+            _currentPlayersPosition.Add(GetChunkContainBlock(Vector3Int.FloorToInt(spawnPosition)));
         }
 
         private Vector3Int GetChunkContainBlock(Vector3Int blockWorldPosition)

@@ -42,7 +42,8 @@ namespace MultiCraft.Scripts.Game.World.Generators
                         if (x + foliageRadius is >= 0 and < GameWorld.ChunkWidth &&
                             x - foliageRadius is >= 0 and < GameWorld.ChunkWidth &&
                             z + foliageRadius is >= 0 and < GameWorld.ChunkWidth &&
-                            z - foliageRadius is >= 0 and < GameWorld.ChunkWidth)
+                            z - foliageRadius is >= 0 and < GameWorld.ChunkWidth &&
+                            blocks[x,height-1,z] != BlockType.Air) 
                         {
                             int foliageY = height + treeHeight - 2;
                             for (int dy = 0; dy <= foliageRadius; dy++)
