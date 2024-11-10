@@ -229,7 +229,7 @@ namespace MultiCraft.Scripts.Game.World
             var chunkPosition = GetChunkContainBlock(blockWorldPosition);
             if (Chunks.TryGetValue(chunkPosition, out var chunkData))
             {
-                var chunkOrigin = new Vector3Int(chunkPosition.x, 0, chunkPosition.y) * ChunkWidth;
+                var chunkOrigin = new Vector3Int(chunkPosition.x, chunkPosition.y, chunkPosition.z) * ChunkWidth;
                 chunkData.Renderer.SpawnBlock(blockWorldPosition - chunkOrigin, blockType);
             }
             else return false;
@@ -245,7 +245,7 @@ namespace MultiCraft.Scripts.Game.World
             var chunkPosition = GetChunkContainBlock(blockWorldPosition);
             if (Chunks.TryGetValue(chunkPosition, out var chunkData))
             {
-                var chunkOrigin = new Vector3Int(chunkPosition.x, 0, chunkPosition.y) * ChunkWidth;
+                var chunkOrigin = new Vector3Int(chunkPosition.x, chunkPosition.y, chunkPosition.z) * ChunkWidth;
                 destroyedBlockType = chunkData.Renderer.DestroyBlock(blockWorldPosition  - chunkOrigin);
             }
             else return BlockType.Air; //TODO: Воздух заменить на BlockType.Unknown

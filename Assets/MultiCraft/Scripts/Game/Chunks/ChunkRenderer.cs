@@ -29,6 +29,11 @@ namespace MultiCraft.Scripts.Game.Chunks
         {
             Chunk.Blocks[position.x, position.y, position.z] = blockType;
             RegenerateMesh();
+            
+            Chunk.LeftChunk.Renderer.RegenerateMesh();
+            Chunk.RightChunk.Renderer.RegenerateMesh();
+            Chunk.FrontChunk.Renderer.RegenerateMesh();
+            Chunk.BackChunk.Renderer.RegenerateMesh();
         }
 
         public BlockType DestroyBlock(Vector3Int position)
@@ -36,6 +41,11 @@ namespace MultiCraft.Scripts.Game.Chunks
             var destroyedBlockType = Chunk.Blocks[position.x, position.y, position.z];
             Chunk.Blocks[position.x, position.y, position.z] = BlockType.Air;
             RegenerateMesh();
+            
+            Chunk.LeftChunk.Renderer.RegenerateMesh();
+            Chunk.RightChunk.Renderer.RegenerateMesh();
+            Chunk.FrontChunk.Renderer.RegenerateMesh();
+            Chunk.BackChunk.Renderer.RegenerateMesh();
             
             return destroyedBlockType;
         }
