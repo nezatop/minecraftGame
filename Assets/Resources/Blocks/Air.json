@@ -1,6 +1,7 @@
 {
   "Type": "Air",
   "Hardness": -1,
+  "Durability": -1,
   "UvsPixelsOffsetLeftX": 0,
   "UvsPixelsOffsetLeftY": 0,
   "UvsPixelsOffsetRightX": 0,

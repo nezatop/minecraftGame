@@ -25,6 +25,7 @@ namespace MultiCraft.Scripts.Game.World
 
         [Header("Generating settings")] public int Seed = 0;
         public ChunkRenderer ChunkPrefab;
+        public GameObject DropItemPrefab;
 
         [Header("Player settings")] public GameObject PlayerPrefab;
 
@@ -37,7 +38,7 @@ namespace MultiCraft.Scripts.Game.World
 
         private Vector3 _spawnPosition;
         private bool _playerSpawned = false;
-        
+
         private IEnumerator Generate(bool wait)
         {
             int loadRadius = ViewDistance + 1;
@@ -156,7 +157,7 @@ namespace MultiCraft.Scripts.Game.World
 
         private void Update()
         {
-            if (_meshingResults.Count == 0 && _playerSpawned == false) 
+            if (_meshingResults.Count == 0 && _playerSpawned == false)
             {
                 Vector3Int playerPosition = GetChunkContainBlock(Vector3Int.FloorToInt(_spawnPosition));
                 Chunk chunk = Chunks[playerPosition];
@@ -171,7 +172,7 @@ namespace MultiCraft.Scripts.Game.World
                     _currentPlayersPosition.Clear();
                 }
             }
-            
+
             CheckPlayers(true);
 
             if (_meshingResults.TryDequeue(out GeneratedMesh mesh))
@@ -229,8 +230,9 @@ namespace MultiCraft.Scripts.Game.World
             var chunkPosition = GetChunkContainBlock(blockWorldPosition);
             if (Chunks.TryGetValue(chunkPosition, out var chunkData))
             {
-                var chunkOrigin = new Vector3Int(chunkPosition.x, 0, chunkPosition.y) * ChunkWidth;
-                chunkData.Renderer.SpawnBlock(blockWorldPosition - chunkOrigin, blockType);
+                var chunkOrigin = new Vector3Int(chunkPosition.x, chunkPosition.y, chunkPosition.z) * ChunkWidth;
+                var blockChunkPosition = blockWorldPosition - chunkOrigin;
+                chunkData.Renderer.SpawnBlock(blockChunkPosition, blockType);
             }
             else return false;
 
@@ -245,14 +247,23 @@ namespace MultiCraft.Scripts.Game.World
             var chunkPosition = GetChunkContainBlock(blockWorldPosition);
             if (Chunks.TryGetValue(chunkPosition, out var chunkData))
             {
-                var chunkOrigin = new Vector3Int(chunkPosition.x, 0, chunkPosition.y) * ChunkWidth;
-                destroyedBlockType = chunkData.Renderer.DestroyBlock(blockWorldPosition  - chunkOrigin);
+                var chunkOrigin = new Vector3Int(chunkPosition.x, chunkPosition.y, chunkPosition.z) * ChunkWidth;
+                var blockChunkPosition = blockWorldPosition - chunkOrigin;
+                destroyedBlockType = chunkData.Renderer.DestroyBlock(blockChunkPosition);
+                if (destroyedBlockType != BlockType.Air)
+                {
+                    SpawnDropItem(blockPosition, destroyedBlockType);
+                }
             }
-            else return BlockType.Air; //TODO: Воздух заменить на BlockType.Unknown
+            else return BlockType.Air;
 
             return destroyedBlockType;
         }
-
+        
+        private void SpawnDropItem(Vector3 position, BlockType blockType)
+        {
+            var item = Instantiate(DropItemPrefab, position, Quaternion.identity);
+        }
         public void SpawnPlayer(Vector3 spawnPosition)
         {
             if (PlayerPrefab == null)
@@ -274,12 +285,32 @@ namespace MultiCraft.Scripts.Game.World
                 blockWorldPosition.x / ChunkWidth,
                 blockWorldPosition.y / ChunkHeight,
                 blockWorldPosition.z / ChunkWidth);
+            
 
-            if (blockWorldPosition.x < 0) chunkPosition.x--;
-            if (blockWorldPosition.y < 0) chunkPosition.y--;
-            if (blockWorldPosition.z < 0) chunkPosition.z--;
+            if (blockWorldPosition.x < 0)
+                if (blockWorldPosition.x % ChunkWidth != 0)
+                    chunkPosition.x--;
+            if (blockWorldPosition.z < 0) 
+                if (blockWorldPosition.z % ChunkWidth != 0)
+                    chunkPosition.z--;
 
             return chunkPosition;
+        }
+
+        public Block GetBlockAtPosition(Vector3 blockPosition)
+        {
+            BlockType destroyedBlockType = BlockType.Air;
+
+            var blockWorldPosition = Vector3Int.FloorToInt(blockPosition);
+            var chunkPosition = GetChunkContainBlock(Vector3Int.FloorToInt(blockPosition));
+            if (Chunks.TryGetValue(chunkPosition, out var chunk))
+            {
+                var chunkOrigin = new Vector3Int(chunkPosition.x, chunkPosition.y, chunkPosition.z) * ChunkWidth;
+                var blockChunkPosition = blockWorldPosition - chunkOrigin;
+                destroyedBlockType = chunk.Blocks[blockChunkPosition.x, blockChunkPosition.y, blockChunkPosition.z];
+            }
+            
+            return BlockDataBase.GetBlock(destroyedBlockType);
         }
     }
 }

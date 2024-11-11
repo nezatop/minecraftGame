@@ -1,6 +1,7 @@
 {
   "Type": 4,
   "Hardness": 3,
+  "Durability": 8,
   "UvsPixelsOffsetLeftX": 3,
   "UvsPixelsOffsetLeftY": 15,
   "UvsPixelsOffsetRightX": 3,

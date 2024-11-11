@@ -18,7 +18,7 @@ namespace MultiCraft.Scripts.Game.Inventory
 
         private void Update()
         {
-            PrintInv();
+            //PrintInv();
         }
 
         private void PrintInv()
