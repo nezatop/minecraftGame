@@ -306,6 +306,8 @@ MonoBehaviour:
   moveSpeed: 5
   jumpHeight: 2
   gravity: -9.81
+  maxDistance: 5
+  breakSpeed: 11.78
   Camera: {fileID: 4736112050845592878}
 --- !u!114 &1720310481008901283
 MonoBehaviour:

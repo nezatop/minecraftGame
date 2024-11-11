@@ -7,6 +7,7 @@ namespace MultiCraft.Scripts.Game.Blocks
     {
         public BlockType Type = BlockType.Air;
         public int Hardness = -1;
+        public int Durability = -1;
 
         public int UvsPixelsOffsetLeftX = 0;
         public int UvsPixelsOffsetLeftY = 0;
