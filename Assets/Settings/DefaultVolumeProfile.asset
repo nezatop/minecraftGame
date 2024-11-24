@@ -100,10 +100,10 @@ MonoBehaviour:
     m_Value: 0
   quality:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   intensity:
     m_OverrideState: 1
-    m_Value: 0.024
+    m_Value: 0
   clamp:
     m_OverrideState: 1
     m_Value: 0.05
@@ -887,7 +887,7 @@ MonoBehaviour:
     m_Value: {x: 0.5, y: 0.5}
   intensity:
     m_OverrideState: 1
-    m_Value: 0.032
+    m_Value: 0
   smoothness:
     m_OverrideState: 1
     m_Value: 0.2

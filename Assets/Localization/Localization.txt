@@ -1,0 +1,23 @@
+# English Localization
+en:menu_singleplay=Singleplay
+en:menu_multiplay=Multiplay
+
+# French Localization
+fr:menu_singleplay=Solo
+fr:menu_multiplay=Multijoueur
+
+# Spanish Localization
+es:menu_singleplay=Un jugador
+es:menu_multiplay=Múltiples jugadores
+
+# German Localization
+de:menu_singleplay=Einzelspieler
+de:menu_multiplay=Mehrspieler
+
+# Russian Localization
+ru:menu_singleplay=Одиночная игра
+ru:menu_multiplay=Многопользовательская игра
+
+# Italian Localization
+it:menu_singleplay=Giocatore singolo
+it:menu_multiplay=Giocatore multiplo

@@ -1,8 +1,0 @@
-﻿{
-  "Name": "Dirt",
-  "Type": 1,
-  "Description": "A block of dirt. Useful for building or filling spaces.",
-  "MaxQuantity": 64,
-  "Stackable": true,
-  "MaxDurability": 0
-}
