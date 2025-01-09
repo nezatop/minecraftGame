@@ -321,7 +321,7 @@ namespace MultiCraft.Scripts.Engine.Core.Worlds
                                 blocks[x, y, z] = (waterChance > RiverChance && height <= WaterLevel)
                                     ? 3
                                     : biome.subSurfaceBlock;
-                        if (y >= height - 1 && y <= height)
+                        if (y >= height - 1 && y < height)
                             blocks[x, y, z] = (waterChance > RiverChance && height <= WaterLevel)
                                 ? 3
                                 : biome.surfaceBlock;

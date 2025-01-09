@@ -52,6 +52,9 @@ export function handleClientMessage(data, socket) {
         case 'get_entities':
             handleGetEntities(data, socket);
             break;
+        case 'attack_player':
+            handleAttack(data, socket);
+            break;
         case 'drop_item':
             handleDropItem(data.position, data.item_type, data.amount, socket);
             break;
@@ -59,6 +62,10 @@ export function handleClientMessage(data, socket) {
     }
 }
 
+function handleAttack(data, socket) {
+    const target = data.target;
+    clients.get(target)
+}
 
 function handleDropItem(position, item_type, amount, socket) {
 
@@ -203,7 +210,7 @@ function updateFloraBlock(position, blockType, socket) {
         };
         const index = indexV3.x + indexV3.z * 16 + indexV3.y * 16 * 16;
         chunk[index] = blockType;
-        chunkMap.set(chunkKey, chunk);
+        floraChunkMap.set(chunkKey, chunk);
         broadcast(JSON.stringify({type: 'block_update',chunk: "Flora", position: position, block_type: blockType}));
     }
 }
@@ -241,7 +248,6 @@ function getChunkContainingBlock(blockWorldPosition) {
 }
 
 export function broadcast(data) {
-    console.log(`[SERVER]Send massage ${data}`);
     clients.forEach((_, client) => {
         if (client.readyState === WebSocket.OPEN) {
             client.send(data);

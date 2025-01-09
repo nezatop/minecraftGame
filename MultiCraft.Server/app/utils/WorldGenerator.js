@@ -320,7 +320,7 @@ export class WorldGenerator {
 
     getBlockType(y, height, biome, waterChance) {
         if (y < 1) return 7; // Bedrock
-        if (y < height - 3) return 2; // Stone
+        if (y < height - 3) return 1; // Stone
         if (y >= height - 3 && y < height - 1) {
             return waterChance > this.config.RiverChance && height <= this.config.WaterLevel ? 3 : biome.subSurfaceBlock;
         }

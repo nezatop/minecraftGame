@@ -20,7 +20,7 @@ MonoBehaviour:
     Items: []
     Amount: 0
   IsPlaceable: 1
-  BlockType: {fileID: 0}
+  BlockType: {fileID: 11400000, guid: a3636af15a221c147b80e110130caac4, type: 2}
   MaxDurability: 0
   Damage: 0
   ToolType: 0

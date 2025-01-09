@@ -1,13 +1,13 @@
-import { WebSocketServer } from 'ws'; // Импортируем WebSocketServer
+import {WebSocketServer} from 'ws'; // Импортируем WebSocketServer
 
 import express from 'express';
 import http from 'http';
 import cors from 'cors';
 
-import { loadPlayerData, savePlayerData, playerData } from './utils/storage.js';
-import { handleClientMessage, broadcast, SendEntities } from './routes/player.js';
-import { PORT } from './config.js';
-import { clients } from './utils/chunk.js';
+import {loadPlayerData, savePlayerData, playerData} from './utils/storage.js';
+import {handleClientMessage, broadcast, SendEntities} from './routes/player.js';
+import {PORT} from './config.js';
+import {clients} from './utils/chunk.js';
 
 const updateInterval = 10000 / 200;
 
@@ -19,7 +19,7 @@ const server = http.createServer(app);
 app.use(cors());
 
 // Создаем сервер WebSocket
-const wss = new WebSocketServer({ server }); // Используем WebSocketServer вместо WebSocket.Server
+const wss = new WebSocketServer({server}); // Используем WebSocketServer вместо WebSocket.Server
 
 //loadPlayerData();
 setInterval(SendEntities, updateInterval);
@@ -29,8 +29,6 @@ wss.on('connection', (socket) => {
     socket.on('message', (message) => {
         try {
             const data = JSON.parse(message);
-            console.log(`[SERVER]Received massage ${JSON.stringify(data)}`);
-
             handleClientMessage(data, socket);
         } catch (error) {
             console.error('Ошибка при обработке сообщения:', error);
@@ -47,7 +45,7 @@ wss.on('connection', (socket) => {
                 playerData.delete(clientId);
             }
         }
-        broadcast(JSON.stringify({ type: 'player_disconnected', player_id: clientId }));
+        broadcast(JSON.stringify({type: 'player_disconnected', player_id: clientId}));
         clients.delete(socket);
     });
 });
