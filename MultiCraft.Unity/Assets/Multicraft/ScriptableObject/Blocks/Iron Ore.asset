@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 295abb67d2cd4f358d71dd28af6f04e3, type: 3}
+  m_Name: Iron Ore
+  m_EditorClassIdentifier: 
+  Id: 15
+  Name: Iron Ore
+  IsFlora: 0
+  ToolToDig: 1
+  MinToolLevelToDig: 2
+  Durability: 3
+  IsTransparent: 0
+  HaveInventory: 0
+  DropItem: {fileID: 11400000, guid: 7d982bfda255e36498bb103cea226276, type: 2}
+  Textures:
+  - {fileID: 2800000, guid: b8882b149e54184429c30255f5e72f34, type: 3}
+  - {fileID: 2800000, guid: b8882b149e54184429c30255f5e72f34, type: 3}
+  - {fileID: 2800000, guid: b8882b149e54184429c30255f5e72f34, type: 3}
+  - {fileID: 2800000, guid: b8882b149e54184429c30255f5e72f34, type: 3}
+  - {fileID: 2800000, guid: b8882b149e54184429c30255f5e72f34, type: 3}
+  - {fileID: 2800000, guid: b8882b149e54184429c30255f5e72f34, type: 3}
+  StepSound: {fileID: 0}
+  DigSound: {fileID: 0}
+  PlaceSound: {fileID: 0}

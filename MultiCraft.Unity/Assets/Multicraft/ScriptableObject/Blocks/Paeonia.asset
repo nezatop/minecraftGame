@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 295abb67d2cd4f358d71dd28af6f04e3, type: 3}
+  m_Name: Paeonia
+  m_EditorClassIdentifier: 
+  Id: 29
+  Name: Paeonia
+  IsFlora: 1
+  ToolToDig: 5
+  MinToolLevelToDig: 0
+  Durability: 1
+  IsTransparent: 1
+  HaveInventory: 0
+  DropItem: {fileID: 11400000, guid: fe55f9aef77a99c4b9d7a3fdeff02f69, type: 2}
+  Textures:
+  - {fileID: 2800000, guid: 316d692b42f7bc743a5604fe177f3a54, type: 3}
+  - {fileID: 2800000, guid: 316d692b42f7bc743a5604fe177f3a54, type: 3}
+  - {fileID: 2800000, guid: 316d692b42f7bc743a5604fe177f3a54, type: 3}
+  - {fileID: 2800000, guid: 316d692b42f7bc743a5604fe177f3a54, type: 3}
+  - {fileID: 2800000, guid: 316d692b42f7bc743a5604fe177f3a54, type: 3}
+  - {fileID: 2800000, guid: 316d692b42f7bc743a5604fe177f3a54, type: 3}
+  StepSound: {fileID: 0}
+  DigSound: {fileID: 0}
+  PlaceSound: {fileID: 0}
