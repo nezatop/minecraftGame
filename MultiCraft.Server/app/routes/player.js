@@ -16,6 +16,7 @@ import {addInventory, createInventory, getInventory, setInventory} from "../util
 
 export function handleClientMessage(data, socket) {
     console.log(chunkMap.size);
+    console.log([...chunkMap.keys()]);
     switch (data.type) {
         case 'connect':
             handleConnect(data, socket);
