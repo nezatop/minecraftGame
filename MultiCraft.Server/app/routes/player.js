@@ -12,6 +12,8 @@ import {addInventory, createInventory, getInventory, setInventory} from "../util
 import fs from "fs";
 import path from "path";
 import msgpack from '@msgpack/msgpack';
+import {WebSocketServer} from 'ws'; // Импортируем WebSocketServer
+
 
 const __dirname = "D:\\Work\\Unity\\minecraftGame\\MultiCraft.Server\\app"
 

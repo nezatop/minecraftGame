@@ -2,11 +2,10 @@
   "name": "ms_mult_last",
   "version": "1.0.0",
   "description": "Server and client for Multicraft.",
-  "main": "Server/server.js",
+  "main": "app/app.js",
   "type": "module",
   "scripts": {
-    "start": "node app/app.js",
-    "dev": "nodemon Server/server.js"
+    "start": "node app/app.js"
   },
   "dependencies": {
     "@msgpack/msgpack": "^3.0.0-beta2",
