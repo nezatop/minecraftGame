@@ -157,16 +157,14 @@ namespace MultiCraft.Scripts.Engine.Core.Inventories
 
         public void RemoveDurability()
         {
-            if (Slots[HotBarSelectedSlot].Item != null)
+            if (Slots[HotBarSelectedSlot] == null) return;
+            if (Slots[HotBarSelectedSlot].Item == null) return;
+            if (Slots[HotBarSelectedSlot].Item.Type != ItemType.Tool) return;
+            
+            Slots[HotBarSelectedSlot].Durability--;
+            if (Slots[HotBarSelectedSlot].Durability <= 0)
             {
-                if (Slots[HotBarSelectedSlot].Item.Type == ItemType.Tool)
-                {
-                    Slots[HotBarSelectedSlot].Durability--;
-                    if (Slots[HotBarSelectedSlot].Durability <= 0)
-                    {
-                        RemoveSelectedItem();
-                    }
-                }
+                RemoveSelectedItem();
             }
         }
 

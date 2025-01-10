@@ -146,18 +146,19 @@ namespace MultiCraft.Scripts.Engine.Network.Player
             if (!Physics.Raycast(transform.position, transform.forward, out var hitInfo, 5f, mobLayer)) return false;
             GameObject hitObject = hitInfo.collider.gameObject;
 
-            Debug.Log($"Hit object: {hitObject.name}");
 
             var Mob = hitObject.GetComponent<Mob>();
             if (Mob != null)
             {
+                Debug.Log($"Hit object: {hitObject.name}");
                 StartCoroutine(Mob.TakeDamage(1, -hitInfo.normal));
             }
             
             var otherPlayer = hitObject.GetComponent<OtherNetPlayer>();
             if (otherPlayer != null)
             {
-                NetworkManager.instance.ServerMassageAttack(1, otherPlayer.playerName);
+                Debug.Log($"Hit object: {hitObject.name}");
+                NetworkManager.Instance.ServerMassageAttack(1, otherPlayer.playerName);
             }
 
             return true;

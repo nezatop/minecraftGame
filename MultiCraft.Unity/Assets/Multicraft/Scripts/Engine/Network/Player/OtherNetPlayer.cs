@@ -22,8 +22,12 @@ namespace MultiCraft.Scripts.Engine.Network.Player
 
         private void Update()
         {
-           nickNameTable.transform.LookAt(cameraTransform);
-           nickNameTable.transform.Rotate(0f, 180f, 0f);
+            if(!cameraTransform)return;
+            var direction = cameraTransform.position - nickNameTable.transform.position;
+            direction.y = 0f;
+            nickNameTable.transform.rotation = Quaternion.LookRotation(direction);
+            nickNameTable.transform.Rotate(0f, 180f, 0f);
+
         }
     }
 }

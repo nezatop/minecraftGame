@@ -1,22 +1,27 @@
 import {playerData} from '../utils/storage.js';
 import {
     clients,
-    chunkMap,
-    floraChunkMap,
-    waterChunkMap,
     createChunk,
-    getChunkIndex,
-    getRandomSurfacePosition,
-    createWaterChunk,
     createFloraChunk,
-    entities
+    createWaterChunk,
+    entities,
+    getRandomSurfacePosition
 } from '../utils/chunk.js';
 import {PlayerData} from "../models/player.js";
 import {addInventory, createInventory, getInventory, setInventory} from "../utils/inventory.js";
+import fs from "fs";
+import path from "path";
+import msgpack from '@msgpack/msgpack';
+
+const __dirname = "D:\\Work\\Unity\\minecraftGame\\MultiCraft.Server\\app"
+
+const chunkStorageDir = path.join(__dirname, 'chunks');
+
+if (!fs.existsSync(chunkStorageDir)) {
+    fs.mkdirSync(chunkStorageDir, {recursive: true});
+}
 
 export function handleClientMessage(data, socket) {
-    //console.log(chunkMap.size);
-    //console.log([...chunkMap.keys()]);
     switch (data.type) {
         case 'connect':
             handleConnect(data, socket);
@@ -25,7 +30,7 @@ export function handleClientMessage(data, socket) {
             handleGetChunk(data.position, socket);
             break;
         case 'move':
-            handleMove(data.position,data.rotation, socket);
+            handleMove(data.position, data.rotation, data.velocity, socket);
             break;
         case 'get_players':
             handlePlayers(socket);
@@ -54,23 +59,27 @@ export function handleClientMessage(data, socket) {
         case 'get_entities':
             handleGetEntities(data, socket);
             break;
-        case 'attack_player':
+        case 'Attack':
             handleAttack(data, socket);
-            break;
-        case 'drop_item':
-            handleDropItem(data.position, data.item_type, data.amount, socket);
             break;
         default:
     }
 }
 
 function handleAttack(data, socket) {
-    const target = data.target;
-    clients.get(target)
-}
-
-function handleDropItem(position, item_type, amount, socket) {
-
+    const target = data.attack_target;
+    let foundSocket = null;
+    clients.forEach((value, socket) => {
+        if (value === target) {
+            foundSocket = socket;
+        }
+    });
+    foundSocket.send(JSON.stringify(
+        {
+            type: 'damage',
+            damage: data.damage
+        }
+    ));
 }
 
 function handleChat(player, chat_massage, socket) {
@@ -139,46 +148,101 @@ function handlePlayers(socket) {
         type: 'players_list', players: playersArray
     }));
 }
+/*
+function saveChunkToFile(chunkKey, chunk, waterChunk, floraChunk) {
+    const filePath = path.join(chunkStorageDir, `${chunkKey}.json`);
+
+    const chunkData = {
+        chunk,
+        waterChunk,
+        floraChunk
+    };
+
+    fs.writeFileSync(filePath, JSON.stringify(chunkData), 'utf8');
+}
+
+function loadChunkFromFile(chunkKey) {
+    const filePath = path.join(chunkStorageDir, `${chunkKey}.json`);
+
+    if (fs.existsSync(filePath)) {
+        const data = fs.readFileSync(filePath, 'utf8');
+        return JSON.parse(data);
+    }
+    return null;
+}
+*/
+
+function saveChunkToFile(chunkKey, chunk, waterChunk, floraChunk) {
+    const filePath = path.join(chunkStorageDir, `${chunkKey}.mp`);
+
+    const chunkData = { chunk, waterChunk, floraChunk };
+    const packedData = msgpack.encode(chunkData);
+
+    fs.writeFileSync(filePath, packedData);
+}
+
+function loadChunkFromFile(chunkKey) {
+    const filePath = path.join(chunkStorageDir, `${chunkKey}.mp`);
+
+    if (fs.existsSync(filePath)) {
+        const packedData = fs.readFileSync(filePath);
+        return msgpack.decode(packedData);
+    }
+    return null;
+}
 
 function handleGetChunk(position, socket) {
     const chunkKey = `${position.x},${position.y},${position.z}`;
     let chunk;
     let waterChunk;
     let floraChunk;
-    if (chunkMap.has(chunkKey)) chunk = chunkMap.get(chunkKey); else {
+    const savedChunkData = loadChunkFromFile(chunkKey);
+
+    if (savedChunkData) {
+        chunk = savedChunkData.chunk;
+        waterChunk = savedChunkData.waterChunk;
+        floraChunk = savedChunkData.floraChunk;
+    } else {
         chunk = createChunk(position.x * 16, position.y * 256, position.z * 16);
-        chunkMap.set(chunkKey, chunk);
-    }
-
-    if (waterChunkMap.has(chunkKey)) waterChunk = waterChunkMap.get(chunkKey); else {
         waterChunk = createWaterChunk(position.x * 16, position.y * 256, position.z * 16);
-        waterChunkMap.set(chunkKey, waterChunk);
-    }
-
-    if (floraChunkMap.has(chunkKey)) floraChunk = floraChunkMap.get(chunkKey); else {
         floraChunk = createFloraChunk(position.x * 16, position.y * 256, position.z * 16);
-        floraChunkMap.set(chunkKey, floraChunk);
+
+        saveChunkToFile(chunkKey, chunk, waterChunk, floraChunk);
     }
 
     socket.send(JSON.stringify({
-        type: 'chunk_data', position: position, blocks: chunk, waterChunk: waterChunk, floraChunk: floraChunk,
+        type: 'chunk_data',
+        position: position,
+        blocks: chunk,
+        waterChunk: waterChunk,
+        floraChunk: floraChunk,
     }));
 }
 
-function handleMove(position,rotation, socket) {
+function handleMove(position, rotation, velocity, socket) {
     const clientId = clients.get(socket);
     if (clientId && playerData.has(clientId)) {
         playerData.get(clientId).position = position;
         playerData.get(clientId).rotation = rotation;
     }
-    broadcast(JSON.stringify({type: 'player_moved', player_id: clientId, position: position,rotation:rotation}));
+    broadcast(JSON.stringify({
+        type: 'player_moved',
+        player_id: clientId,
+        position: position,
+        rotation: rotation,
+        velocity: velocity
+    }));
 }
 
+// Обновление блока в чанк
 function updateBlock(position, blockType, socket) {
     const chunkPosition = getChunkContainingBlock(position);
     const chunkKey = `${chunkPosition.x},${chunkPosition.y},${chunkPosition.z}`;
-    if (chunkMap.has(chunkKey)) {
-        const chunk = chunkMap.get(chunkKey);
+
+    // Загружаем чанк из файла
+    let chunk = loadChunkFromFile(chunkKey);
+
+    if (chunk) {
         const chunkOrigin = {
             x: chunkPosition.x * 16, y: chunkPosition.y * 16, z: chunkPosition.z * 16
         };
@@ -188,33 +252,55 @@ function updateBlock(position, blockType, socket) {
         };
 
         const index = indexV3.x + indexV3.z * 16 + indexV3.y * 16 * 16;
-        chunk[index] = blockType;
+        chunk.chunk[index] = blockType; // Обновляем блок в чанке
 
         if (blockType === 15) {
-            addInventory(position);
+            addInventory(position); // Если блок определенный, добавляем в инвентарь
         }
 
-        chunkMap.set(chunkKey, chunk);
+        // Сохраняем чанк обратно в файл
+        saveChunkToFile(chunkKey, chunk.chunk, chunk.waterChunk, chunk.floraChunk);
 
-        broadcast(JSON.stringify({type: 'block_update',chunk: "Block", position: position, block_type: blockType}));
+        // Отправляем обновление всем клиентам
+        broadcast(JSON.stringify({
+            type: 'block_update',
+            chunk: "Block",
+            position: position,
+            block_type: blockType
+        }));
     }
 }
 
+// Обновление флоры в чанк
 function updateFloraBlock(position, blockType, socket) {
     const chunkPosition = getChunkContainingBlock(position);
     const chunkKey = `${chunkPosition.x},${chunkPosition.y},${chunkPosition.z}`;
-    if (floraChunkMap.has(chunkKey)) {
-        const chunk = floraChunkMap.get(chunkKey);
+
+    // Загружаем флору чанка из файла
+    let floraChunk = loadChunkFromFile(chunkKey);
+
+    if (floraChunk) {
         const chunkOrigin = {
             x: chunkPosition.x * 16, y: chunkPosition.y * 16, z: chunkPosition.z * 16
         };
+
         const indexV3 = {
             x: position.x - chunkOrigin.x, y: position.y - chunkOrigin.y, z: position.z - chunkOrigin.z,
         };
+
         const index = indexV3.x + indexV3.z * 16 + indexV3.y * 16 * 16;
-        chunk[index] = blockType;
-        floraChunkMap.set(chunkKey, chunk);
-        broadcast(JSON.stringify({type: 'block_update',chunk: "Flora", position: position, block_type: blockType}));
+        floraChunk.floraChunk[index] = blockType; // Обновляем флору в чанке
+
+        // Сохраняем флору обратно в файл
+        saveChunkToFile(chunkKey, floraChunk.chunk, floraChunk.waterChunk, floraChunk.floraChunk);
+
+        // Отправляем обновление всем клиентам
+        broadcast(JSON.stringify({
+            type: 'block_update',
+            chunk: "Flora",
+            position: position,
+            block_type: blockType
+        }));
     }
 }
 

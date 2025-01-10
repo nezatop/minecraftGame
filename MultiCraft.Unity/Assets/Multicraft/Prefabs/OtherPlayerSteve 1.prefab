@@ -25,7 +25,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4210079762179168557}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1.25, y: 1, z: 1.25}
   m_ConstrainProportionsScale: 0
@@ -34,7 +34,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 2.526}
+  m_AnchoredPosition: {x: 0, y: 1.507}
   m_SizeDelta: {x: 1, y: 0.33}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &4456761148767528769
@@ -269,6 +269,7 @@ MonoBehaviour:
   health: 10
   maxHealth: 10
   haveHunger: 0
+  meshRenderer: {fileID: 8177033849958261973}
 --- !u!1001 &8177033849969733495
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -358,6 +359,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1beda0946d74ea747890ab9fe6603d22, type: 3}
+--- !u!137 &8177033849958261973 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 13700002, guid: 1beda0946d74ea747890ab9fe6603d22, type: 3}
+  m_PrefabInstance: {fileID: 8177033849969733495}
+  m_PrefabAsset: {fileID: 0}
 --- !u!95 &8177033849962404375 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 9500000, guid: 1beda0946d74ea747890ab9fe6603d22, type: 3}

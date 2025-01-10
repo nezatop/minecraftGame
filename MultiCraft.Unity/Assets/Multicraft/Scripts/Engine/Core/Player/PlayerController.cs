@@ -6,6 +6,7 @@ using MultiCraft.Scripts.Engine.Core.MeshBuilders;
 using MultiCraft.Scripts.Engine.Utils;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace MultiCraft.Scripts.Engine.Core.Player
 {
@@ -25,7 +26,7 @@ namespace MultiCraft.Scripts.Engine.Core.Player
         public AudioClip jumpSound;
         public float stepInterval = 0.5f;
 
-        private CharacterController _controller;
+        public CharacterController controller;
         private Vector3 _velocity;
         private bool _isGrounded;
 
@@ -36,7 +37,7 @@ namespace MultiCraft.Scripts.Engine.Core.Player
         private Inventory _inventory;
         private float _fallStartY;
         private bool _isFalling;
-        private Health _health;
+        public Health health;
 
         private float _stepTimer;
 
@@ -56,13 +57,13 @@ namespace MultiCraft.Scripts.Engine.Core.Player
         {
             
             _inventory = GetComponent<Inventory>();
-            _health = GetComponent<Health>();
-            if (_health == null)
+            health = GetComponent<Health>();
+            if (health == null)
             {
                 Debug.LogError("Health component not found on the player!");
             }
 
-            _controller = GetComponent<CharacterController>();
+            controller = GetComponent<CharacterController>();
         }
 
         private void OnEnable()
@@ -96,7 +97,7 @@ namespace MultiCraft.Scripts.Engine.Core.Player
 
         private void CheckGrounded()
         {
-            _isGrounded = _controller.isGrounded;
+            _isGrounded = controller.isGrounded;
             animator.SetBool("Grounded", _isGrounded);
 
             if (_isGrounded && _velocity.y < 0)
@@ -124,7 +125,7 @@ namespace MultiCraft.Scripts.Engine.Core.Player
 
         private void MoveCharacter(Vector3 moveDirection)
         {
-            _controller.Move(moveDirection * (moveSpeed * Time.deltaTime));
+            controller.Move(moveDirection * (moveSpeed * Time.deltaTime));
 
             if (_isGrounded && moveDirection.magnitude > 0)
             {
@@ -152,7 +153,7 @@ namespace MultiCraft.Scripts.Engine.Core.Player
         private void UpdateVerticalVelocity()
         {
             _velocity.y += gravity * Time.deltaTime;
-            _controller.Move(_velocity * Time.deltaTime);
+            controller.Move(_velocity * Time.deltaTime);
         }
 
 
@@ -160,9 +161,9 @@ namespace MultiCraft.Scripts.Engine.Core.Player
         {
             _velocity = Vector3
                 .zero; // Отключаем текущую скорость, чтобы избежать странного поведения после телепортации
-            _controller.enabled = false; // Отключаем CharacterController, чтобы избежать конфликтов
+            controller.enabled = false; // Отключаем CharacterController, чтобы избежать конфликтов
             transform.position = position;
-            _controller.enabled = true; // Включаем обратно
+            controller.enabled = true; // Включаем обратно
         }
 
 
@@ -243,18 +244,18 @@ namespace MultiCraft.Scripts.Engine.Core.Player
                 moveSpeed = 5.0f;
             }
 
-            var center = _controller.center;
+            var center = controller.center;
             center.y = _crouching ? 0.6f : 0.21f;
-            _controller.center = center;
+            controller.center = center;
             animator.SetFloat("Upright", !_crouching ? 1.0f : 0.0f);
         }
 
         private void ApplyFallDamage(float fallDistance)
         {
-            if (_health != null)
+            if (health != null)
             {
                 float damage = (fallDistance - fallThreshold) * fallDamageMultiplier;
-                _health.TakeDamage(Mathf.RoundToInt(damage));
+                health.TakeDamage(Mathf.RoundToInt(damage));
             }
         }
 

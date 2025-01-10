@@ -198,13 +198,13 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
                         var chunkPos = new Vector3Int(x, 0, z);
                         if (_chunks.TryGetValue(chunkPos, out var chunk))
                         {
-                            if (!chunk.Renderer && !NetworkManager.instance.ChunksToRender.Contains(chunkPos))
-                                NetworkManager.instance.ChunksToRender.Enqueue(chunkPos);
+                            if (!chunk.Renderer && !NetworkManager.Instance.ChunksToRender.Contains(chunkPos))
+                                NetworkManager.Instance.ChunksToRender.Enqueue(chunkPos);
                             continue;
                         }
 
-                        if (!NetworkManager.instance.ChunksToGet.Contains(chunkPos))
-                            NetworkManager.instance.ChunksToGet.Enqueue(chunkPos);
+                        if (!NetworkManager.Instance.ChunksToGet.Contains(chunkPos))
+                            NetworkManager.Instance.ChunksToGet.Enqueue(chunkPos);
                     }
                 }
             }
@@ -316,14 +316,14 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
         public void DestroyBlock(Vector3 blockPosition)
         {
             var blockWorldPosition = Vector3Int.FloorToInt(blockPosition);
-            NetworkManager.instance.SendBlockDestroyed(blockWorldPosition);
+            NetworkManager.Instance.SendBlockDestroyed(blockWorldPosition);
         }
 
         public void SpawnBlock(Vector3 blockPosition, int blockType)
         {
             if (blockType == 0) return;
             var blockWorldPosition = Vector3Int.FloorToInt(blockPosition);
-            NetworkManager.instance.SendBlockPlaced(blockWorldPosition, blockType);
+            NetworkManager.Instance.SendBlockPlaced(blockWorldPosition, blockType);
         }
 
         public void UpdateBlock(Vector3Int position, int newBlockType)
@@ -368,12 +368,12 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
         public void GetInventory(Vector3 blockPosition)
         {
-            NetworkManager.instance.GetInventory(blockPosition);
+            NetworkManager.Instance.GetInventory(blockPosition);
         }
 
         public void UpdateChest(Vector3Int chestPosition, List<ItemInSlot> chestSlots)
         {
-            NetworkManager.instance.SetInventory(chestPosition, chestSlots);
+            NetworkManager.Instance.SetInventory(chestPosition, chestSlots);
         }
 
         #endregion
@@ -382,7 +382,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
     [Serializable]
     public class ServerSettings
     {
-        [Header("Performance")] [Range(1, 16)] public int viewDistanceInChunks = 8;
-        [Range(1, 32)] public int loadDistance = 16;
+        [Header("Performance")] [Range(1, 64)] public int viewDistanceInChunks = 8;
+        [Range(1, 64)] public int loadDistance = 16;
     }
 }

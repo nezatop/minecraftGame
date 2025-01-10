@@ -52,10 +52,10 @@ namespace MultiCraft.Scripts.Engine.Utils.Commands
             if (input[0] != '/')
             {
                 
-                if (NetworkManager.instance != null)
+                if (NetworkManager.Instance != null)
                 {
-                    PrintLog($"{NetworkManager.instance.playerName}: {input}");
-                    NetworkManager.instance.SendMessageToServerChat(input);
+                    PrintLog($"{NetworkManager.Instance.playerName}: {input}");
+                    NetworkManager.Instance.SendMessageToServerChat(input);
                 }
                 else
                 {

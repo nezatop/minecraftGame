@@ -8,20 +8,18 @@ import {loadPlayerData, savePlayerData, playerData} from './utils/storage.js';
 import {handleClientMessage, broadcast, SendEntities} from './routes/player.js';
 import {PORT} from './config.js';
 import {clients} from './utils/chunk.js';
+import fs from "fs";
+import path from "path";
 
 const updateInterval = 10000 / 200;
 
-// Создаем приложение Express
 const app = express();
 const server = http.createServer(app);
 
-// Настройка CORS
 app.use(cors());
 
-// Создаем сервер WebSocket
 const wss = new WebSocketServer({server}); // Используем WebSocketServer вместо WebSocket.Server
 
-//loadPlayerData();
 setInterval(SendEntities, updateInterval);
 
 wss.on('connection', (socket) => {

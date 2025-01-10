@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
+using Multicraft.Scripts.Engine.Core.Hunger;
 using MultiCraft.Scripts.Engine.Core.Inventories;
 using MultiCraft.Scripts.Engine.Core.Player;
 using MultiCraft.Scripts.Engine.Network.Player;
@@ -25,7 +26,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         #region Parametrs
 
-        public static NetworkManager instance { get; private set; }
+        public static NetworkManager Instance { get; private set; }
 
         [Header("Debug Settings")] public bool enableLogging = true;
 
@@ -43,6 +44,7 @@ namespace MultiCraft.Scripts.Engine.Network
         private string _playerPassword;
 
         private GameObject _player;
+        private PlayerController _playerController;
         private Vector3 _playerPosition;
 
         public ConcurrentQueue<Vector3Int> ChunksToRender;
@@ -53,15 +55,17 @@ namespace MultiCraft.Scripts.Engine.Network
         public VariableJoystick moveJoystick;
         public VariableJoystick cameraJoystick;
 
-        private bool isMobile => SystemInfo.deviceType == DeviceType.Handheld;
+        private static bool IsMobile => SystemInfo.deviceType == DeviceType.Handheld;
 
+        private Vector3 _startPosition;
+        
         #endregion
 
         #region Initialization
 
         private void Start()
         {
-            instance = this;
+            Instance = this;
 
             ChunksToRender = new ConcurrentQueue<Vector3Int>();
             ChunksToGet = new ConcurrentQueue<Vector3Int>();
@@ -147,6 +151,11 @@ namespace MultiCraft.Scripts.Engine.Network
             }
         }
 
+        private void OnDestroy()
+        {
+            _playerController.health.OnDeath -= RespawnPlayer;
+        }
+
         #region HandleServerMessage
 
         private void HandleServerMessage(string data)
@@ -155,8 +164,8 @@ namespace MultiCraft.Scripts.Engine.Network
             {
                 var message = JsonDocument.Parse(data);
                 var type = message.RootElement.GetProperty("type").GetString();
-                if (type != "player_moved" && type != "entities")
-                    LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
+               
+                LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                 switch (type)
                 {
                     case "connected":
@@ -252,21 +261,20 @@ namespace MultiCraft.Scripts.Engine.Network
             var playerId = data.GetProperty("player_id").GetString();
             var targetPosition = JsonToVector3(data.GetProperty("position"));
             var targetRotation = JsonToVector3(data.GetProperty("rotation"));
+            var velocity = JsonToVector3(data.GetProperty("velocity"));
 
             if (playerId == null || playerId == playerName ||
                 !_otherPlayers.TryGetValue(playerId, out var player)) return;
             var playerAnimator = player.animator;
             var smoothSpeed = 0.1f;
-            var previousPosition = player.transform.position;
-
             player.transform.position = targetPosition;
 
             var targetQuaternion = Quaternion.Euler(targetRotation);
             player.transform.rotation = Quaternion.Lerp(player.transform.rotation, targetQuaternion, smoothSpeed);
 
-            playerAnimator.SetFloat(VelocityX, (previousPosition-targetPosition).x);
-            playerAnimator.SetFloat(VelocityY, (previousPosition-targetPosition).y);
-            playerAnimator.SetFloat(VelocityZ, (previousPosition-targetPosition).z);
+            playerAnimator.SetFloat(VelocityX, velocity.x);
+            playerAnimator.SetFloat(VelocityY, velocity.y);
+            playerAnimator.SetFloat(VelocityZ, velocity.z);
         }
 
 
@@ -274,7 +282,7 @@ namespace MultiCraft.Scripts.Engine.Network
         {
             var playerId = data.GetProperty("player_id").GetString();
 
-            UiManager.Instance.ChatWindow.commandReader.PrintLog($"{playerId}: Вышел с сервера сервер");
+            UiManager.Instance.ChatWindow.commandReader.PrintLog($"{playerId}: Вышел с сервера");
             if (playerId == null || !_otherPlayers.TryGetValue(playerId, out var player)) return;
             Destroy(player);
             _otherPlayers.Remove(playerId);
@@ -332,17 +340,15 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void HandleDamage(JsonElement data)
         {
-            var attackTarget = data.GetProperty("attack_target").ToString();
-            var damage = int.Parse(data.GetProperty("damage").ToString());
-
-            _otherPlayers[attackTarget].health.TakeDamage(damage);
+            var damage = data.GetProperty("damage").GetInt32();
+            if(_playerController) _playerController.health.TakeDamage(damage);
         }
 
         private IEnumerator SendPlayerPositionRepeatedly()
         {
             while (true)
             {
-                ServerMassageMove(_player);
+                ServerMassageMove(_playerController);
                 yield return null;
             }
             // ReSharper disable once IteratorNeverReturns
@@ -381,9 +387,8 @@ namespace MultiCraft.Scripts.Engine.Network
                     {
                         Entity entity = new Entity
                         {
-                            id = entityElement.GetProperty("id").GetString(),
-                            type = entityElement.GetProperty("type").GetString(),
-                            position = JsonToVector3(entityElement.GetProperty("position"))
+                            ID = entityElement.GetProperty("id").GetString(),
+                            Position = JsonToVector3(entityElement.GetProperty("position"))
                         };
                         entities.Add(entity);
                     }
@@ -395,26 +400,24 @@ namespace MultiCraft.Scripts.Engine.Network
 
                 foreach (var entity in entities)
                 {
-                    if (_animals.ContainsKey(entity.id)) continue;
+                    if (_animals.ContainsKey(entity.ID)) continue;
                     if (!(_playerPosition.x -
                           NetworkWorld.instance.settings.viewDistanceInChunks * NetworkWorld.ChunkWidth <=
-                          entity.position.x &&
+                          entity.Position.x &&
                           _playerPosition.x + NetworkWorld.instance.settings.viewDistanceInChunks *
-                          NetworkWorld.ChunkWidth >= entity.position.x &&
+                          NetworkWorld.ChunkWidth >= entity.Position.x &&
                           _playerPosition.z - NetworkWorld.instance.settings.viewDistanceInChunks *
-                          NetworkWorld.ChunkWidth <= entity.position.z &&
+                          NetworkWorld.ChunkWidth <= entity.Position.z &&
                           _playerPosition.z + NetworkWorld.instance.settings.viewDistanceInChunks *
-                          NetworkWorld.ChunkWidth >= entity.position.z)) continue;
+                          NetworkWorld.ChunkWidth >= entity.Position.z)) continue;
                     var animal = Instantiate(animalPrefab,
-                        entity.position + new Vector3(
-                            entity.position.x >= 0 ? 0.5f : -0.5f,
+                        entity.Position + new Vector3(
+                            entity.Position.x >= 0 ? 0.5f : -0.5f,
                             0.5f,
-                            entity.position.z >= 0 ? 0.5f : -0.5f),
+                            entity.Position.z >= 0 ? 0.5f : -0.5f),
                         Quaternion.Euler(-90, 0, 0));
-                    _animals.Add(entity.id, animal);
+                    _animals.Add(entity.ID, animal);
                 }
-
-                LogDebug($"Получено {entities.Count} сущностей.");
             }
             else
             {
@@ -515,20 +518,25 @@ namespace MultiCraft.Scripts.Engine.Network
         {
             if (_player) return;
 
+            _startPosition = _playerPosition;
+            
             _player = Instantiate(playerPrefab, _playerPosition + Vector3.up * 2, Quaternion.identity);
+            _playerController = _player.GetComponent<PlayerController>();
+            
+            _playerController.variableJoystick = moveJoystick;
+            _playerController.isMobile = IsMobile;
 
-            _player.GetComponent<PlayerController>().variableJoystick = moveJoystick;
-            _player.GetComponent<PlayerController>().isMobile = isMobile;
+            _playerController.cameraController.variableJoystick = cameraJoystick;
+            _playerController.cameraController.isMobile = IsMobile;
 
-            _player.GetComponent<PlayerController>().cameraController.variableJoystick = cameraJoystick;
-            _player.GetComponent<PlayerController>().cameraController.isMobile = isMobile;
-
-            moveJoystick.gameObject.SetActive(isMobile);
-            cameraJoystick.gameObject.SetActive(isMobile);
+            moveJoystick.gameObject.SetActive(IsMobile);
+            cameraJoystick.gameObject.SetActive(IsMobile);
 
             NetworkWorld.instance.player = _player;
 
-            UiManager.Instance.PlayerController = _player.GetComponent<PlayerController>();
+            _playerController.health.OnDeath += RespawnPlayer;
+
+            UiManager.Instance.PlayerController = _playerController;
             UiManager.Instance.Initialize();
             UiManager.Instance.CloseLoadingScreen();
 
@@ -536,10 +544,17 @@ namespace MultiCraft.Scripts.Engine.Network
             {
                 otherPlayers.cameraTransform = _player.GetComponentInChildren<Camera>().transform;
             }
-
+            
             StartCoroutine(SendPlayerPositionRepeatedly());
         }
 
+        private void RespawnPlayer()
+        {
+            _player.transform.position = _startPosition;
+            _playerController.health.health = _playerController.health.maxHealth;
+            _playerController.GetComponent<HungerSystem>().hunger = _playerController.GetComponent<HungerSystem>().maxHunger;
+        }
+        
         #endregion
 
         #region Inventory
@@ -595,17 +610,17 @@ namespace MultiCraft.Scripts.Engine.Network
                 var item = new ItemJson();
                 if (slot == null)
                 {
-                    item.type = "null";
-                    item.count = 0;
-                    item.durability = 0;
+                    item.Type = "null";
+                    item.Count = 0;
+                    item.Durability = 0;
                 }
                 else
                 {
                     item = new ItemJson()
                     {
-                        type = slot.Item.Name,
-                        count = slot.Amount,
-                        durability = slot.Durability,
+                        Type = slot.Item.Name,
+                        Count = slot.Amount,
+                        Durability = slot.Durability,
                     };
                 }
 
@@ -626,9 +641,9 @@ namespace MultiCraft.Scripts.Engine.Network
             {
                 var item = new ItemInSlot
                 {
-                    Amount = itemJson.count,
-                    Durability = itemJson.durability,
-                    Item = itemJson.type != "null" ? ResourceLoader.Instance.GetItem(itemJson.type) : null
+                    Amount = itemJson.Count,
+                    Durability = itemJson.Durability,
+                    Item = itemJson.Type != "null" ? ResourceLoader.Instance.GetItem(itemJson.Type) : null
                 };
 
                 inventory.Add(item);
@@ -716,8 +731,9 @@ namespace MultiCraft.Scripts.Engine.Network
             _webSocket.SendAsync(Encoding.UTF8.GetBytes(jsonMessage));
         }
 
-        private void ServerMassageMove(GameObject player)
+        private void ServerMassageMove(PlayerController player)
         {
+            if(!player)return;
             SendMessageToServer(new
             {
                 type = "move",
@@ -733,6 +749,12 @@ namespace MultiCraft.Scripts.Engine.Network
                     player.transform.rotation.eulerAngles.x,
                     player.transform.rotation.eulerAngles.y,
                     player.transform.rotation.eulerAngles.z
+                },
+                velocity = new
+                {
+                    player.controller.velocity.x,
+                    player.controller.velocity.y,
+                    player.controller.velocity.z,
                 }
             });
         }
@@ -770,15 +792,14 @@ namespace MultiCraft.Scripts.Engine.Network
 
     public class ItemJson
     {
-        public string type { get; set; }
-        public int count { get; set; }
-        public int durability { get; set; }
+        public string Type { get; set; }
+        public int Count { get; set; }
+        public int Durability { get; set; }
     }
 
     public class Entity
     {
-        public string id { get; set; }
-        public string type { get; set; }
-        public Vector3 position { get; set; }
+        public string ID { get; set; }
+        public Vector3 Position { get; set; }
     }
 }

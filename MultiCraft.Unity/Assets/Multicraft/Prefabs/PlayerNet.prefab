@@ -623,9 +623,11 @@ MonoBehaviour:
   - {fileID: 8300000, guid: db5d765289580744790ba2a1eda19317, type: 3}
   jumpSound: {fileID: 8300000, guid: de4a562844dfb0c4eb62107bd6826460, type: 3}
   stepInterval: 0.5
+  controller: {fileID: 8170409019854026989}
   handRenderer: {fileID: 311714298413353384}
   DroppedItemPrefab: {fileID: 7938290796487471727, guid: fca637bc470e974498b1b97fbaeda5bd, type: 3}
   DropForce: 5
+  health: {fileID: 5341370029845805918}
   animator: {fileID: 3668425676564365382}
   variableJoystick: {fileID: 0}
   isMobile: 0
@@ -645,6 +647,7 @@ MonoBehaviour:
   health: 10
   maxHealth: 10
   haveHunger: 1
+  meshRenderer: {fileID: 3668425676568624772}
 --- !u!114 &4486335351370104482
 MonoBehaviour:
   m_ObjectHideFlags: 0
