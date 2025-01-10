@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Multicraft/Scenes/Multiplayer.unity
+    guid: 7c909d371dd0ff94db259ca098a957a1
+  - enabled: 1
     path: Assets/Multicraft/Scenes/MainMenu.unity
     guid: d637c06d04f0ef841b6065e45fdfb373
   - enabled: 1
@@ -14,9 +17,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Multicraft/Scenes/Gameplay.unity
     guid: 622a16a822c78cd4d9e3590bbcfa065b
-  - enabled: 1
-    path: Assets/Multicraft/Scenes/Multiplayer.unity
-    guid: 7c909d371dd0ff94db259ca098a957a1
   - enabled: 0
     path: Assets/Multicraft/Scenes/Loading.unity
     guid: 5c4c83fb4e82702489ae0756d791208e

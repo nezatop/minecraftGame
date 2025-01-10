@@ -130,6 +130,9 @@ namespace MultiCraft.Scripts.Engine.Network
             }
 
             if (ChunksToGet.Count > 0) return;
+            if (NetworkWorld.instance.ChunksLoaded < (NetworkWorld.instance.settings.viewDistanceInChunks * 2 + 1) *
+                (NetworkWorld.instance.settings.viewDistanceInChunks * 2 + 1))
+                return;
 
             if (ChunksToRender.TryDequeue(out chunkPosition))
             {
@@ -513,7 +516,7 @@ namespace MultiCraft.Scripts.Engine.Network
         {
             if (_player) return;
 
-            _player = Instantiate(playerPrefab, _playerPosition+Vector3.up*2, Quaternion.identity);
+            _player = Instantiate(playerPrefab, _playerPosition + Vector3.up * 2, Quaternion.identity);
 
             _player.GetComponent<PlayerController>().variableJoystick = moveJoystick;
             _player.GetComponent<PlayerController>().isMobile = isMobile;

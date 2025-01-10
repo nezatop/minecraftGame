@@ -34,7 +34,9 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
         #region Chunk Dictionaries
 
-        [Header("Chunks Dictionary")] private Dictionary<Vector3Int, Chunk> _chunks;
+        [Header("Chunks Dictionary")] 
+        public int ChunksLoaded => _chunks.Count;
+        private Dictionary<Vector3Int, Chunk> _chunks;
         private Dictionary<Vector3Int, Chunk> _waterChunks;
         private Dictionary<Vector3Int, Chunk> _floraChunks;
 

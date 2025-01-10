@@ -15,6 +15,7 @@ import {PlayerData} from "../models/player.js";
 import {addInventory, createInventory, getInventory, setInventory} from "../utils/inventory.js";
 
 export function handleClientMessage(data, socket) {
+    console.log(chunkMap.size);
     switch (data.type) {
         case 'connect':
             handleConnect(data, socket);
