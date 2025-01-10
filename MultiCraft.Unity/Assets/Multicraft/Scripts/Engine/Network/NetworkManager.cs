@@ -249,36 +249,35 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void OnPlayerMoved(JsonElement data)
         {
-            string playerId = data.GetProperty("player_id").GetString();
-            Vector3 targetPosition = JsonToVector3(data.GetProperty("position"));
+            var playerId = data.GetProperty("player_id").GetString();
+            var targetPosition = JsonToVector3(data.GetProperty("position"));
+            var targetRotation = JsonToVector3(data.GetProperty("rotation"));
 
-            if (playerId != null && _otherPlayers.TryGetValue(playerId, out var player))
-            {
-                Animator playerAnimator = player.animator;
-                float smoothSpeed = 0.1f;
-                Vector3 velocity = Vector3.zero;
+            if (playerId == null || playerId == playerName ||
+                !_otherPlayers.TryGetValue(playerId, out var player)) return;
+            var playerAnimator = player.animator;
+            var smoothSpeed = 0.1f;
+            var previousPosition = player.transform.position;
 
-                player.transform.position =
-                    Vector3.SmoothDamp(player.transform.position, targetPosition, ref velocity, smoothSpeed);
+            player.transform.position = targetPosition;
 
-                Vector3 movement = velocity;
+            var targetQuaternion = Quaternion.Euler(targetRotation);
+            player.transform.rotation = Quaternion.Lerp(player.transform.rotation, targetQuaternion, smoothSpeed);
 
-                playerAnimator.SetFloat(VelocityX, movement.x);
-                playerAnimator.SetFloat(VelocityY, movement.y);
-                playerAnimator.SetFloat(VelocityZ, movement.z);
-            }
+            playerAnimator.SetFloat(VelocityX, (previousPosition-targetPosition).x);
+            playerAnimator.SetFloat(VelocityY, (previousPosition-targetPosition).y);
+            playerAnimator.SetFloat(VelocityZ, (previousPosition-targetPosition).z);
         }
+
 
         private void OnPlayerDisconnected(JsonElement data)
         {
-            string playerId = data.GetProperty("player_id").GetString();
+            var playerId = data.GetProperty("player_id").GetString();
 
             UiManager.Instance.ChatWindow.commandReader.PrintLog($"{playerId}: Вышел с сервера сервер");
-            if (playerId != null && _otherPlayers.ContainsKey(playerId))
-            {
-                Destroy(_otherPlayers[playerId]);
-                _otherPlayers.Remove(playerId);
-            }
+            if (playerId == null || !_otherPlayers.TryGetValue(playerId, out var player)) return;
+            Destroy(player);
+            _otherPlayers.Remove(playerId);
         }
 
         private void HandlePlayerUpdate(JsonElement data)
@@ -728,6 +727,12 @@ namespace MultiCraft.Scripts.Engine.Network
                     player.transform.position.x,
                     player.transform.position.y,
                     player.transform.position.z
+                },
+                rotation = new
+                {
+                    player.transform.rotation.eulerAngles.x,
+                    player.transform.rotation.eulerAngles.y,
+                    player.transform.rotation.eulerAngles.z
                 }
             });
         }

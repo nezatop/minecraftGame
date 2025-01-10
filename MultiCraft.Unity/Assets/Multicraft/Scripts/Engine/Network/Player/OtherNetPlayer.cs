@@ -14,17 +14,10 @@ namespace MultiCraft.Scripts.Engine.Network.Player
         public Animator animator;
         
         public Transform cameraTransform;
-        private Animator _animator;
-
-        private void Awake()
-        {
-            _animator = GetComponent<Animator>();
-        }
 
         public void Init()
         {
             nickNameTable.text = playerName;
-            animator = _animator;
         }
 
         private void Update()

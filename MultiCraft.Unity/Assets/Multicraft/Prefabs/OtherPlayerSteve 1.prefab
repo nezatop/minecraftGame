@@ -236,7 +236,7 @@ CharacterController:
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 1, z: 0}
+  m_Center: {x: 0, y: 0.1, z: 0}
 --- !u!114 &7056010270576457223
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -251,7 +251,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerName: 
   nickNameTable: {fileID: 1938730937296035050}
-  health: {fileID: 0}
+  health: {fileID: 3386025606263367384}
   animator: {fileID: 8177033849962404375}
   cameraTransform: {fileID: 0}
 --- !u!114 &3386025606263367384
@@ -281,17 +281,33 @@ PrefabInstance:
       propertyPath: m_Name
       value: Steve
       objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 1beda0946d74ea747890ab9fe6603d22, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 1beda0946d74ea747890ab9fe6603d22, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 1beda0946d74ea747890ab9fe6603d22, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: 1beda0946d74ea747890ab9fe6603d22, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -90
+      objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 1beda0946d74ea747890ab9fe6603d22, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1.25
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 1beda0946d74ea747890ab9fe6603d22, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.1111112
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 1beda0946d74ea747890ab9fe6603d22, type: 3}
       propertyPath: m_LocalScale.z
-      value: 1.25
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 1beda0946d74ea747890ab9fe6603d22, type: 3}
       propertyPath: m_LocalPosition.x
@@ -299,7 +315,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 1beda0946d74ea747890ab9fe6603d22, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.85
       objectReference: {fileID: 0}
     - target: {fileID: 400010, guid: 1beda0946d74ea747890ab9fe6603d22, type: 3}
       propertyPath: m_LocalPosition.z

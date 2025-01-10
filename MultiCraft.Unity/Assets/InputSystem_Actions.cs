@@ -134,6 +134,15 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""exit"",
+                    ""type"": ""Button"",
+                    ""id"": ""c3f52833-f638-4f24-b983-6ed06c93c3b4"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -552,6 +561,17 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""SendMessage"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2919bb12-949f-4278-b269-ea9557c4ebd0"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""exit"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1151,6 +1171,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         m_Player_OpenInventory = m_Player.FindAction("OpenInventory", throwIfNotFound: true);
         m_Player_OpenChat = m_Player.FindAction("OpenChat", throwIfNotFound: true);
         m_Player_SendMessage = m_Player.FindAction("SendMessage", throwIfNotFound: true);
+        m_Player_exit = m_Player.FindAction("exit", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1242,6 +1263,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_OpenInventory;
     private readonly InputAction m_Player_OpenChat;
     private readonly InputAction m_Player_SendMessage;
+    private readonly InputAction m_Player_exit;
     public struct PlayerActions
     {
         private @InputSystem_Actions m_Wrapper;
@@ -1258,6 +1280,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         public InputAction @OpenInventory => m_Wrapper.m_Player_OpenInventory;
         public InputAction @OpenChat => m_Wrapper.m_Player_OpenChat;
         public InputAction @SendMessage => m_Wrapper.m_Player_SendMessage;
+        public InputAction @exit => m_Wrapper.m_Player_exit;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -1303,6 +1326,9 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @SendMessage.started += instance.OnSendMessage;
             @SendMessage.performed += instance.OnSendMessage;
             @SendMessage.canceled += instance.OnSendMessage;
+            @exit.started += instance.OnExit;
+            @exit.performed += instance.OnExit;
+            @exit.canceled += instance.OnExit;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -1343,6 +1369,9 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @SendMessage.started -= instance.OnSendMessage;
             @SendMessage.performed -= instance.OnSendMessage;
             @SendMessage.canceled -= instance.OnSendMessage;
+            @exit.started -= instance.OnExit;
+            @exit.performed -= instance.OnExit;
+            @exit.canceled -= instance.OnExit;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -1537,6 +1566,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         void OnOpenInventory(InputAction.CallbackContext context);
         void OnOpenChat(InputAction.CallbackContext context);
         void OnSendMessage(InputAction.CallbackContext context);
+        void OnExit(InputAction.CallbackContext context);
     }
     public interface IUIActions
     {

@@ -15,8 +15,8 @@ import {PlayerData} from "../models/player.js";
 import {addInventory, createInventory, getInventory, setInventory} from "../utils/inventory.js";
 
 export function handleClientMessage(data, socket) {
-    console.log(chunkMap.size);
-    console.log([...chunkMap.keys()]);
+    //console.log(chunkMap.size);
+    //console.log([...chunkMap.keys()]);
     switch (data.type) {
         case 'connect':
             handleConnect(data, socket);
@@ -25,7 +25,7 @@ export function handleClientMessage(data, socket) {
             handleGetChunk(data.position, socket);
             break;
         case 'move':
-            handleMove(data.position, socket);
+            handleMove(data.position,data.rotation, socket);
             break;
         case 'get_players':
             handlePlayers(socket);
@@ -165,12 +165,13 @@ function handleGetChunk(position, socket) {
     }));
 }
 
-function handleMove(position, socket) {
+function handleMove(position,rotation, socket) {
     const clientId = clients.get(socket);
     if (clientId && playerData.has(clientId)) {
         playerData.get(clientId).position = position;
+        playerData.get(clientId).rotation = rotation;
     }
-    broadcast(JSON.stringify({type: 'player_moved', player_id: clientId, position: position}));
+    broadcast(JSON.stringify({type: 'player_moved', player_id: clientId, position: position,rotation:rotation}));
 }
 
 function updateBlock(position, blockType, socket) {

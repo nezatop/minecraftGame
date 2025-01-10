@@ -10,6 +10,7 @@ using MultiCraft.Scripts.Engine.Utils.Commands;
 using MultiCraft.Scripts.Engine.Utils.MulticraftDebug;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace MultiCraft.Scripts.Engine.UI
 {
@@ -208,19 +209,29 @@ namespace MultiCraft.Scripts.Engine.UI
 
         private void OpenPause()
         {
+            Cursor.lockState = CursorLockMode.Confined;
+            Cursor.visible = true;
             PauseScreen.SetActive(true);
         }
 
         private void ClosePause()
         {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
             PauseScreen.SetActive(false);
         }
 
         #endregion
 
+        public void MainMenu()
+        {
+            SceneManager.LoadScene("MainMenu");
+        }
+
         public void CloseLoadingScreen()
         {
             LoadingScreen.SetActive(false);
         }
+        
     }
 }

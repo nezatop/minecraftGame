@@ -2,6 +2,6 @@
 .idea/
 
 # Исключить папку ИмяПроекта.clone_n
-*.clone_*/
+*_clone_*/
 
 *.Builds/
