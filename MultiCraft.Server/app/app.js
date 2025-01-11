@@ -26,18 +26,12 @@ console.log("key", key);
 console.log("cert", cert);
 
 const app = express();
-/*const server = https.createServer(
+const server = https.createServer(
     {
         key,
         cert,
         passphrase: 'test'
     }, app);
-
-app.use(cors());
-
-const wss = new WebSocketServer({server}); // Используем WebSocketServer вместо WebSocket.Server
-*/
-const server = http.createServer(app);
 
 app.use(cors());
 
