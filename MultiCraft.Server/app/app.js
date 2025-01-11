@@ -19,8 +19,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Чтение сертификата и ключа
-const key = fs.readFileSync(path.join(__dirname, '../certs/key.pem'));
-const cert = fs.readFileSync(path.join(__dirname, '../certs/cert.pem'));
+const key = fs.readFileSync(path.join(__dirname, '../certs/private.key'));
+const cert = fs.readFileSync(path.join(__dirname, '../certs/certificate.crt'));
 
 const app = express();
 const server = https.createServer({ key, cert }, app); // Создаём HTTPS сервер
