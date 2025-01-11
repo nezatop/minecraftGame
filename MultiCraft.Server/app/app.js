@@ -19,8 +19,8 @@ const __dirname = path.dirname(__filename);
 
 const updateInterval = 10000 / 200;
 
-const key = fs.readFileSync(path.join(__dirname, '../certs/key.pem'));
-const cert = fs.readFileSync(path.join(__dirname, '../certs/cert.pem'));
+const key = fs.readFileSync(path.join(__dirname, '../certs/cert.pem'));
+const cert = fs.readFileSync(path.join(__dirname, '../certs/key.pem'));
 
 console.log("key", key);
 console.log("cert", cert);
@@ -48,7 +48,7 @@ setInterval(SendEntities, updateInterval);
 wss.on('connection', (socket) => {
 
     console.log("socket", socket);
-    
+
     socket.on('message', (message) => {
         try {
             const data = JSON.parse(message);
