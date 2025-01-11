@@ -98,6 +98,10 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void OnError(object sender, ErrorEventArgs e)
         {
+            LogError($"[Client] Error: {e.Exception}");
+            LogError($"[Client] Error: {e.Exception.Data}");
+            LogError($"[Client] Error: {e.Exception.InnerException}");
+            LogError($"[Client] Error: {e.Exception.StackTrace}");
             LogError($"[Client] Error: {e.Message}");
         }
 

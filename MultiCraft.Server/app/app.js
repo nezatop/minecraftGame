@@ -35,6 +35,10 @@ const server = https.createServer(
 
 app.use(cors());
 
+app.get('/', (req, res) => {
+    res.send("hello world");
+})
+/*
 const wss = new WebSocketServer({server}); // Используем WebSocketServer вместо WebSocket.Server
 
 setInterval(SendEntities, updateInterval);
@@ -66,7 +70,7 @@ wss.on('connection', (socket) => {
         clients.delete(socket);
     });
 });
-
+*/
 server.listen(PORT, () => {
     console.log(`[SERVER] Start on port ${PORT}`);
 });
