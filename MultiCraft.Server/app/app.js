@@ -2,6 +2,7 @@ import {WebSocketServer} from 'ws'; // Импортируем WebSocketServer
 
 import express from 'express';
 import https from 'https';
+import http from 'http';
 import cors from 'cors';
 
 import {loadPlayerData, savePlayerData, playerData} from './utils/storage.js';
@@ -18,16 +19,22 @@ const __dirname = path.dirname(__filename);
 
 const updateInterval = 10000 / 200;
 
-const key = fs.readFileSync(path.join(__dirname, '../certs/key.pem'));
-const cert = fs.readFileSync(path.join(__dirname, '../certs/cert.pem'));
+//const key = fs.readFileSync(path.join(__dirname, '../certs/key.pem'));
+//const cert = fs.readFileSync(path.join(__dirname, '../certs/cert.pem'));
 
 const app = express();
-const server = https.createServer(
+/*const server = https.createServer(
     {
         key,
         cert,
         passphrase: 'test'
     }, app);
+
+app.use(cors());
+
+const wss = new WebSocketServer({server}); // Используем WebSocketServer вместо WebSocket.Server
+*/
+const server = http.createServer(app);
 
 app.use(cors());
 

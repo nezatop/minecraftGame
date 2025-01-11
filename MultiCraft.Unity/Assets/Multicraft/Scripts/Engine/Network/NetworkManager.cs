@@ -98,7 +98,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void OnError(object sender, ErrorEventArgs e)
         {
-            LogError($"[Client] Error: {e}");
+            LogError($"[Client] Error: {e.Message}");
         }
 
         private void OnMessage(object sender, MessageEventArgs e)
