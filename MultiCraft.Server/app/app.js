@@ -23,7 +23,7 @@ const key = fs.readFileSync(path.join(__dirname, '../certs/private.key'));
 const cert = fs.readFileSync(path.join(__dirname, '../certs/certificate.crt'));
 
 const app = express();
-const server = https.createServer({ key, cert }, app); // Создаём HTTPS сервер
+const server = https.createServer({ key, cert,passphrase: 'test' }, app); // Создаём HTTPS сервер
 
 app.use(cors());
 
