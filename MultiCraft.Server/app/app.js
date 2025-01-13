@@ -22,10 +22,6 @@ const updateInterval = 10000 / 200;
 const key = fs.readFileSync('/etc/letsencrypt/live/bloxter.fun/privkey.pem');
 const cert = fs.readFileSync('/etc/letsencrypt/live/bloxter.fun/cert.pem');
 
-
-console.log("key", key);
-console.log("cert", cert);
-
 const app = express();
 const server = https.createServer(
     {
@@ -41,9 +37,6 @@ const wss = new WebSocketServer({server}); // Используем WebSocketServ
 setInterval(SendEntities, updateInterval);
 
 wss.on('connection', (socket) => {
-
-    console.log("socket", socket);
-
     socket.on('message', (message) => {
         try {
             const data = JSON.parse(message);

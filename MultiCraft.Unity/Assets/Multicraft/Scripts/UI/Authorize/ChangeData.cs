@@ -34,7 +34,7 @@ namespace MultiCraft.Scripts.UI.Authorize
             Debug.Log("Отправляем JSON: " + jsonData);
 
             using (UnityWebRequest www =
-                   new UnityWebRequest("https://multicraftservices-1.onrender.com/edit-username-password", "PUT"))
+                   new UnityWebRequest("https://bloxter.fun:8081/edit-username-password", "PUT"))
             {
                 byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
                 www.uploadHandler = new UploadHandlerRaw(bodyRaw);

@@ -34,7 +34,7 @@ namespace MultiCraft.Scripts.UI.Authorize
             string jsonData = JsonUtility.ToJson(userData);
             Debug.Log("Отправляем JSON: " + jsonData); // Проверка JSON
 
-            using (UnityWebRequest www = new UnityWebRequest("https://multicraftservices-1.onrender.com/login", "POST"))
+            using (UnityWebRequest www = new UnityWebRequest("https://bloxter.fun:8081/login", "POST"))
             {
                 byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
                 www.uploadHandler = new UploadHandlerRaw(bodyRaw);
