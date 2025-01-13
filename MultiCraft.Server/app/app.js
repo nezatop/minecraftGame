@@ -19,8 +19,9 @@ const __dirname = path.dirname(__filename);
 
 const updateInterval = 10000 / 200;
 
-const key = fs.readFileSync(path.join(__dirname, '../certs/key.pem'));
-const cert = fs.readFileSync(path.join(__dirname, '../certs/cert.pem'));
+const key = fs.readFileSync('/etc/letsencrypt/live/bloxter.fun/privkey.pem');
+const cert = fs.readFileSync('/etc/letsencrypt/live/bloxter.fun/cert.pem');
+
 
 console.log("key", key);
 console.log("cert", cert);
