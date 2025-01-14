@@ -1203,6 +1203,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 9169466884117650876, guid: 269beaac244d7094fb7daca439a82bcb, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1301,8 +1305,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   settings:
-    viewDistanceInChunks: 4
-    loadDistance: 6
+    viewDistanceInChunks: 7
+    loadDistance: 8
   moveJoystick: {fileID: 1943192970}
   cameraJoystick: {fileID: 179221261}
   worldName: 

@@ -327,7 +327,7 @@ namespace MultiCraft.Scripts.Engine.Core.Worlds
                                 : biome.surfaceBlock;
                     }
 
-                    surfaceHeight[x, z] = waterChance > RiverChance && height <= WaterLevel ? -1 : (int)height;
+                    surfaceHeight[x, z] =(int)height;
                 }
             }
 
