@@ -62,7 +62,7 @@ namespace MultiCraft.Scripts.Engine.UI
             HealthView.InitializeHealth(PlayerController.gameObject.GetComponent<Health>());
             hungerUI.InitializeHealth(PlayerController.gameObject.GetComponent<HungerSystem>());
 
-            cordUI.gameObject.SetActive(true);
+            cordUI.gameObject.SetActive(false);
             jumpButton.SetActive(isMobile);
         }
 

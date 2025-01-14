@@ -868,10 +868,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   destroyedBlockPrefab: {fileID: 4520813300798871087, guid: d3c56fbcd08fca64688aef796dcf2802, type: 3}
+  HungerSystem: {fileID: 3440537931468962920}
   breakSpeed: 1
   miningMultiplier: 1
   placeDelay: 0.5
-  _isSurvival: 0
+  _isSurvival: 1
   destroyDelayNonSurvival: 0.3
 --- !u!1 &8410494476123275667
 GameObject:

@@ -43,22 +43,15 @@ namespace MultiCraft.Scripts.UI.Authorize
 
                 yield return www.SendWebRequest();
 
-                if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
+                if (www.responseCode == 200)
                 {
-                    messageText.text = "Ошибка: " + www.error;
+                    messageText.text = "Успех! Вы вошли в систему.";
+                    LoginSuccess();
                 }
                 else
                 {
-                    if (www.responseCode == 200)
-                    {
-                        messageText.text = "Успех! Вы вошли в систему.";
-                        LoginSuccess();
-                    }
-                    else
-                    {
-                        Debug.LogError($"Ошибка {www.responseCode}: " + www.downloadHandler.text);
-                        messageText.text = "Ошибка: " + www.downloadHandler.text;
-                    }
+                    Debug.LogError($"Ошибка {www.responseCode}: " + www.downloadHandler.text);
+                    messageText.text = www.downloadHandler.text;
                 }
             }
         }

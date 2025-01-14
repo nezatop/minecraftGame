@@ -26,21 +26,22 @@ namespace MultiCraft.Scripts.Engine.Core.Player
         {
             _inputSystem.Player.OpenChat.performed += OpenChat;
             _inputSystem.Player.OpenInventory.performed += OpenInventory;
+            _inputSystem.Player.exit.performed += OpenPouseMenu;
         }
 
         private void OnDisable()
         {
             _inputSystem.Player.OpenChat.performed -= OpenChat;
             _inputSystem.Player.OpenInventory.performed -= OpenInventory;  
+            _inputSystem.Player.exit.performed -= OpenPouseMenu; 
         }
 
         private void OnDestroy()
         {
-            _inputSystem.Player.OpenChat.performed -= OpenChat;
-            _inputSystem.Player.OpenInventory.performed -= OpenInventory;
-            
             _inputSystem.Player.Disable();
             _inputSystem.UI.Disable();
+            
+            _inputSystem.Disable();
         }
 
         public void EnableScripts()
@@ -83,6 +84,24 @@ namespace MultiCraft.Scripts.Engine.Core.Player
              //   !mainCamera.GetComponent<HighLightController>().enabled;
 
             UiManager.Instance.OpenCloseInventory();
+        }
+        
+        private void OpenPouseMenu(InputAction.CallbackContext obj)
+        {
+            if(_activeChat) return;
+            _activeInventory = !_activeInventory;
+            foreach (var script in ScriptsToDisable)
+            {
+                script.enabled = !script.enabled;
+            }
+
+            mainCamera.GetComponent<CameraController>().enabled = !mainCamera.GetComponent<CameraController>().enabled;
+            mainCamera.GetComponent<DestroyAndPlaceBlockController>().enabled =
+                !mainCamera.GetComponent<DestroyAndPlaceBlockController>().enabled;
+            //mainCamera.GetComponent<HighLightController>().enabled =
+            //   !mainCamera.GetComponent<HighLightController>().enabled;
+
+            UiManager.Instance.OpenClosePause();
         }
         
         private void OpenChat(InputAction.CallbackContext obj)

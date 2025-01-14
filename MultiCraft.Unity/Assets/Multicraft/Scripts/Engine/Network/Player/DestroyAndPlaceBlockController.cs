@@ -1,7 +1,9 @@
 
 using MultiCraft.Scripts.Engine.Core.Blocks;
 using MultiCraft.Scripts.Engine.Core.Entities;
+using Multicraft.Scripts.Engine.Core.Hunger;
 using MultiCraft.Scripts.Engine.Core.Inventories;
+using MultiCraft.Scripts.Engine.Core.Items;
 using MultiCraft.Scripts.Engine.Core.Player;
 using MultiCraft.Scripts.Engine.Network.Worlds;
 using MultiCraft.Scripts.Engine.UI;
@@ -23,6 +25,8 @@ namespace MultiCraft.Scripts.Engine.Network.Player
         private Inventory _playerInventory;
 
         private GameObject _destroyBlock;
+        
+        public HungerSystem HungerSystem;
 
         private Material _material;
 
@@ -103,6 +107,11 @@ namespace MultiCraft.Scripts.Engine.Network.Player
             else if (Input.GetMouseButtonUp(1))
             {
                 _nextPlaceTime = 0f;
+            }
+            
+            if (Input.GetMouseButtonDown(1))
+            {
+                TryEatItem();
             }
 
             if (Input.GetMouseButtonDown(0))
@@ -206,6 +215,17 @@ namespace MultiCraft.Scripts.Engine.Network.Player
             return false;
         }
 
+        private void TryEatItem()
+        {
+            var selectedItem = _playerInventory.GetSelectedItem();
+            if (selectedItem != null && selectedItem.Item != null && selectedItem.Item.Type == ItemType.Consumable)
+            {
+                HungerSystem.EatFood(Mathf.FloorToInt(selectedItem.Item.HungerRestoration));
+
+                _playerInventory.RemoveSelectedItem();
+            }
+        }
+        
         private void TryDestroyBlock()
         {
             if (!Physics.Raycast(transform.position, transform.forward, out var hitInfo, 5f, worldLayer)) return;
