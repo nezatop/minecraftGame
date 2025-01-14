@@ -49,6 +49,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         public ConcurrentQueue<Vector3Int> ChunksToRender;
         public ConcurrentQueue<Vector3Int> ChunksToGet;
+        public HashSet<Vector3Int> RequestedChunks;
 
         public bool canSpawnPlayer;
 
@@ -58,7 +59,7 @@ namespace MultiCraft.Scripts.Engine.Network
         private static bool IsMobile => SystemInfo.deviceType == DeviceType.Handheld;
 
         private Vector3 _startPosition;
-        
+
         #endregion
 
         #region Initialization
@@ -69,6 +70,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
             ChunksToRender = new ConcurrentQueue<Vector3Int>();
             ChunksToGet = new ConcurrentQueue<Vector3Int>();
+            RequestedChunks = new HashSet<Vector3Int>();
 
             _otherPlayers = new Dictionary<string, OtherNetPlayer>();
             _animals = new Dictionary<string, GameObject>();
@@ -98,10 +100,6 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void OnError(object sender, ErrorEventArgs e)
         {
-            LogError($"[Client] Error: {e.Exception}");
-            LogError($"[Client] Error: {e.Exception.Data}");
-            LogError($"[Client] Error: {e.Exception.InnerException}");
-            LogError($"[Client] Error: {e.Exception.StackTrace}");
             LogError($"[Client] Error: {e.Message}");
         }
 
@@ -134,19 +132,23 @@ namespace MultiCraft.Scripts.Engine.Network
         {
             if (ChunksToGet.TryDequeue(out Vector3Int chunkPosition))
             {
-                RequestChunk(chunkPosition);
+                if (!RequestedChunks.Contains(chunkPosition))
+                {
+                    RequestChunk(chunkPosition);
+                    RequestedChunks.Add(chunkPosition);
+                }
             }
 
             if (ChunksToGet.Count > 0) return;
-            if (NetworkWorld.instance.ChunksLoaded < (NetworkWorld.instance.settings.viewDistanceInChunks * 2 + 1) *
-                (NetworkWorld.instance.settings.viewDistanceInChunks * 2 + 1))
+            if (NetworkWorld.Instance.ChunksLoaded < (NetworkWorld.Instance.settings.viewDistanceInChunks * 2 + 1) *
+                (NetworkWorld.Instance.settings.viewDistanceInChunks * 2 + 1))
                 return;
 
             if (ChunksToRender.TryDequeue(out chunkPosition))
             {
-                NetworkWorld.instance.RenderChunks(chunkPosition);
-                NetworkWorld.instance.RenderWaterChunks(chunkPosition);
-                NetworkWorld.instance.RenderFloraChunks(chunkPosition);
+                StartCoroutine(NetworkWorld.Instance.RenderChunks(chunkPosition));
+                StartCoroutine(NetworkWorld.Instance.RenderWaterChunks(chunkPosition));
+                StartCoroutine(NetworkWorld.Instance.RenderFloraChunks(chunkPosition));
             }
 
             if (!_player && canSpawnPlayer && ChunksToRender.Count <= 0)
@@ -168,7 +170,7 @@ namespace MultiCraft.Scripts.Engine.Network
             {
                 var message = JsonDocument.Parse(data);
                 var type = message.RootElement.GetProperty("type").GetString();
-               
+
                 LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                 switch (type)
                 {
@@ -198,7 +200,7 @@ namespace MultiCraft.Scripts.Engine.Network
                         break;
 
                     case "chunk_data":
-                        HandleChunkData(message.RootElement);
+                        StartCoroutine(HandleChunkData(message.RootElement));
                         break;
 
                     case "player_update":
@@ -240,7 +242,7 @@ namespace MultiCraft.Scripts.Engine.Network
         {
             Vector3 position = JsonToVector3Safe(data, "position");
             _playerPosition = position;
-            NetworkWorld.instance.currentPosition = Vector3Int.FloorToInt(_playerPosition);
+            NetworkWorld.Instance.currentPosition = Vector3Int.FloorToInt(_playerPosition);
             RequestChunksAtStart(position);
         }
 
@@ -337,15 +339,15 @@ namespace MultiCraft.Scripts.Engine.Network
             var type = data.GetProperty("chunk").ToString();
 
             if (type == "Flora")
-                NetworkWorld.instance.UpdateFloraBlock(position, newBlockType);
+                NetworkWorld.Instance.UpdateFloraBlock(position, newBlockType);
             else
-                NetworkWorld.instance.UpdateBlock(position, newBlockType);
+                NetworkWorld.Instance.UpdateBlock(position, newBlockType);
         }
 
         private void HandleDamage(JsonElement data)
         {
             var damage = data.GetProperty("damage").GetInt32();
-            if(_playerController) _playerController.health.TakeDamage(damage);
+            if (_playerController) _playerController.health.TakeDamage(damage);
         }
 
         private IEnumerator SendPlayerPositionRepeatedly()
@@ -406,13 +408,13 @@ namespace MultiCraft.Scripts.Engine.Network
                 {
                     if (_animals.ContainsKey(entity.ID)) continue;
                     if (!(_playerPosition.x -
-                          NetworkWorld.instance.settings.viewDistanceInChunks * NetworkWorld.ChunkWidth <=
+                          NetworkWorld.Instance.settings.viewDistanceInChunks * NetworkWorld.ChunkWidth <=
                           entity.Position.x &&
-                          _playerPosition.x + NetworkWorld.instance.settings.viewDistanceInChunks *
+                          _playerPosition.x + NetworkWorld.Instance.settings.viewDistanceInChunks *
                           NetworkWorld.ChunkWidth >= entity.Position.x &&
-                          _playerPosition.z - NetworkWorld.instance.settings.viewDistanceInChunks *
+                          _playerPosition.z - NetworkWorld.Instance.settings.viewDistanceInChunks *
                           NetworkWorld.ChunkWidth <= entity.Position.z &&
-                          _playerPosition.z + NetworkWorld.instance.settings.viewDistanceInChunks *
+                          _playerPosition.z + NetworkWorld.Instance.settings.viewDistanceInChunks *
                           NetworkWorld.ChunkWidth >= entity.Position.z)) continue;
                     var animal = Instantiate(animalPrefab,
                         entity.Position + new Vector3(
@@ -433,42 +435,62 @@ namespace MultiCraft.Scripts.Engine.Network
 
         #region HandleChunks
 
-        private void HandleChunkData(JsonElement data)
+        private IEnumerator HandleChunkData(JsonElement data)
         {
             Vector3Int chunkCoord = JsonToVector3Int(data.GetProperty("position"));
+
+            int[,,] blocks = null;
+            int[,,] waterBlocks = null;
+            int[,,] floraBlocks = null;
 
             JsonElement blocksJson = data.GetProperty("blocks");
             JsonElement waterBlocksJson = data.GetProperty("waterChunk");
             JsonElement floraBlocksJson = data.GetProperty("floraChunk");
+            
+            // Генерация блоков
+            yield return StartCoroutine(Blocks(blocksJson, result => blocks = result));
+            yield return StartCoroutine(Blocks(waterBlocksJson, result => waterBlocks = result));
+            yield return StartCoroutine(Blocks(floraBlocksJson, result => floraBlocks = result));
 
-            NetworkWorld.instance.SpawnChunk(chunkCoord, Blocks(blocksJson));
-            NetworkWorld.instance.SpawnWaterChunk(chunkCoord, Blocks(waterBlocksJson));
-            NetworkWorld.instance.SpawnFloraChunk(chunkCoord, Blocks(floraBlocksJson));
-
+            // Запуск корутин для спавна чанков
+            StartCoroutine(NetworkWorld.Instance.SpawnChunk(chunkCoord, blocks));
+            StartCoroutine(NetworkWorld.Instance.SpawnWaterChunk(chunkCoord, waterBlocks));
+            StartCoroutine(NetworkWorld.Instance.SpawnFloraChunk(chunkCoord, floraBlocks));
+            
             if (_player)
                 _playerPosition = _player.transform.position;
 
             var playerChunkPosition =
-                NetworkWorld.instance.GetChunkContainBlock(Vector3Int.FloorToInt(_playerPosition));
-            if (playerChunkPosition.x - NetworkWorld.instance.settings.viewDistanceInChunks <= chunkCoord.x &&
-                playerChunkPosition.x + NetworkWorld.instance.settings.viewDistanceInChunks >= chunkCoord.x &&
-                playerChunkPosition.z - NetworkWorld.instance.settings.viewDistanceInChunks <= chunkCoord.z &&
-                playerChunkPosition.z + NetworkWorld.instance.settings.viewDistanceInChunks >= chunkCoord.z)
+                NetworkWorld.Instance.GetChunkContainBlock(Vector3Int.FloorToInt(_playerPosition));
+            if (playerChunkPosition.x - NetworkWorld.Instance.settings.viewDistanceInChunks <= chunkCoord.x &&
+                playerChunkPosition.x + NetworkWorld.Instance.settings.viewDistanceInChunks >= chunkCoord.x &&
+                playerChunkPosition.z - NetworkWorld.Instance.settings.viewDistanceInChunks <= chunkCoord.z &&
+                playerChunkPosition.z + NetworkWorld.Instance.settings.viewDistanceInChunks >= chunkCoord.z)
                 ChunksToRender.Enqueue(chunkCoord);
+            yield return null;
         }
 
-        private int[,,] Blocks(JsonElement blocksJson)
+        private IEnumerator Blocks(JsonElement blocksJson, Action<int[,,]> onComplete)
         {
             var flatBlocks = new int[16 * 16 * 256];
             var blocks = new int[16, 256, 16];
 
             var index = 0;
+
+            // Чтение значений из JSON и заполнение flatBlocks
             foreach (var blockValue in blocksJson.EnumerateArray())
             {
                 flatBlocks[index] = blockValue.GetInt32();
                 index++;
+
+                // Асинхронное выполнение: каждые 1000 блоков отдаем управление движку
+                if (index % 1000 == 0)
+                {
+                    yield return null;
+                }
             }
 
+            // Преобразование flatBlocks в трехмерный массив blocks
             for (int x = 0; x < 16; x++)
             {
                 for (int y = 0; y < 256; y++)
@@ -479,10 +501,15 @@ namespace MultiCraft.Scripts.Engine.Network
                         blocks[x, y, z] = flatBlocks[flatIndex];
                     }
                 }
+
+                // Асинхронное выполнение: каждые 16 строк отдаем управление движку
+                yield return null;
             }
 
-            return blocks;
+            // Вызываем callback с результатом
+            onComplete?.Invoke(blocks);
         }
+
 
         private void RequestChunksAtStart(Vector3 position)
         {
@@ -492,7 +519,7 @@ namespace MultiCraft.Scripts.Engine.Network
                 Mathf.FloorToInt(position.z / 16)
             );
 
-            int loadDistance = NetworkWorld.instance.settings.loadDistance;
+            int loadDistance = NetworkWorld.Instance.settings.loadDistance;
 
             for (int x = -loadDistance; x <= loadDistance; x++)
             {
@@ -523,10 +550,10 @@ namespace MultiCraft.Scripts.Engine.Network
             if (_player) return;
 
             _startPosition = _playerPosition;
-            
+
             _player = Instantiate(playerPrefab, _playerPosition + Vector3.up * 2, Quaternion.identity);
             _playerController = _player.GetComponent<PlayerController>();
-            
+
             _playerController.variableJoystick = moveJoystick;
             _playerController.isMobile = IsMobile;
 
@@ -536,7 +563,7 @@ namespace MultiCraft.Scripts.Engine.Network
             moveJoystick.gameObject.SetActive(IsMobile);
             cameraJoystick.gameObject.SetActive(IsMobile);
 
-            NetworkWorld.instance.player = _player;
+            NetworkWorld.Instance.player = _player;
 
             _playerController.health.OnDeath += RespawnPlayer;
 
@@ -548,7 +575,7 @@ namespace MultiCraft.Scripts.Engine.Network
             {
                 otherPlayers.cameraTransform = _player.GetComponentInChildren<Camera>().transform;
             }
-            
+
             StartCoroutine(SendPlayerPositionRepeatedly());
         }
 
@@ -556,9 +583,10 @@ namespace MultiCraft.Scripts.Engine.Network
         {
             _player.transform.position = _startPosition;
             _playerController.health.health = _playerController.health.maxHealth;
-            _playerController.GetComponent<HungerSystem>().hunger = _playerController.GetComponent<HungerSystem>().maxHunger;
+            _playerController.GetComponent<HungerSystem>().hunger =
+                _playerController.GetComponent<HungerSystem>().maxHunger;
         }
-        
+
         #endregion
 
         #region Inventory
@@ -737,7 +765,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void ServerMassageMove(PlayerController player)
         {
-            if(!player)return;
+            if (!player) return;
             SendMessageToServer(new
             {
                 type = "move",

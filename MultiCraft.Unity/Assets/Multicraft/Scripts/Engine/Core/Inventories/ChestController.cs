@@ -41,7 +41,7 @@ namespace MultiCraft.Scripts.Engine.Core.Inventories
             if(World.Instance != null)
                 World.Instance.UpdateChest(_chestPosition, chestSlots);
             else
-                NetworkWorld.instance.UpdateChest(_chestPosition, chestSlots);
+                NetworkWorld.Instance.UpdateChest(_chestPosition, chestSlots);
             _chestPosition = new Vector3Int(0, 0, 0);
         }
 

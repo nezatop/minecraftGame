@@ -188,7 +188,7 @@ namespace MultiCraft.Scripts.Engine.Network.Player
                     if (selectedItem.Item != null)
                         if (selectedItem.Item.IsPlaceable)
                         {
-                            NetworkWorld.instance.SpawnBlock(blockPosition, selectedItem.Item.BlockType.Id);
+                            NetworkWorld.Instance.SpawnBlock(blockPosition, selectedItem.Item.BlockType.Id);
                             if (_isSurvival) _playerInventory.RemoveSelectedItem();
 
                             handAnimationController.PlayPlaceAnimation();
@@ -204,10 +204,10 @@ namespace MultiCraft.Scripts.Engine.Network.Player
 
             var blockPosition = hitInfo.point - hitInfo.normal * 0.5f;
 
-            var block = NetworkWorld.instance.GetBlockAtPosition(blockPosition);
+            var block = NetworkWorld.Instance.GetBlockAtPosition(blockPosition);
             if (block.HaveInventory)
             {
-                NetworkWorld.instance.GetInventory(Vector3Int.FloorToInt(blockPosition));
+                NetworkWorld.Instance.GetInventory(Vector3Int.FloorToInt(blockPosition));
                 GetComponentInParent<InteractController>().DisableScripts();
                 return true;
             }
@@ -236,7 +236,7 @@ namespace MultiCraft.Scripts.Engine.Network.Player
             {
                 _currentDamage = 0f;
                 _targetBlockPosition = blockPosition;
-                _currentBlock = NetworkWorld.instance.GetBlockAtPosition(blockPosition);
+                _currentBlock = NetworkWorld.Instance.GetBlockAtPosition(blockPosition);
                 if(_currentBlock == null)
                     return;
             }
@@ -247,7 +247,7 @@ namespace MultiCraft.Scripts.Engine.Network.Player
                 if (Time.time < _nextDestroyTime) return;
                 _nextDestroyTime = Time.time + destroyDelayNonSurvival;
 
-                NetworkWorld.instance.DestroyBlock(blockPosition);
+                NetworkWorld.Instance.DestroyBlock(blockPosition);
                 _playerInventory.RemoveDurability();
                 _currentBlock = null;
                 if (_isSurvival)
@@ -263,7 +263,7 @@ namespace MultiCraft.Scripts.Engine.Network.Player
 
             if (_currentDamage >= _currentBlock.Durability && _currentBlock.Durability > 0)
             {
-                NetworkWorld.instance.DestroyBlock(blockPosition);
+                NetworkWorld.Instance.DestroyBlock(blockPosition);
                 _playerInventory.RemoveDurability();
                 _currentDamage = 0f;
                 _currentBlock = null;

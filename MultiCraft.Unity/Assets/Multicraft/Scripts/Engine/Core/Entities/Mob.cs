@@ -194,7 +194,7 @@ namespace MultiCraft.Scripts.Engine.Core.Entities
             if (health <= 0)
             {
                 if(World.Instance != null) World.Instance.DropItem(transform.position, ResourceLoader.Instance.GetItem(drop.item), drop.amount);
-                if(NetworkWorld.instance != null) NetworkWorld.instance.DropItem(transform.position, ResourceLoader.Instance.GetItem(drop.item), drop.amount);
+                if(NetworkWorld.Instance != null) NetworkWorld.Instance.DropItem(transform.position, ResourceLoader.Instance.GetItem(drop.item), drop.amount);
                 Destroy(gameObject);
             }
         }

@@ -19,7 +19,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
     {
         #region Singleton Instance
 
-        public static NetworkWorld instance { get; private set; }
+        public static NetworkWorld Instance { get; private set; }
 
         #endregion
 
@@ -76,7 +76,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
         private void Awake()
         {
-            instance = this;
+            Instance = this;
             StartCoroutine(InitializeWorld());
         }
 
@@ -98,26 +98,26 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
             if (player)
                 StartCoroutine(CheckPlayer());
 
-            SpawnChunks();
+            StartCoroutine(SpawnChunks());
         }
 
         #endregion
 
         #region Chunk Spawning Methods
 
-        private void SpawnChunks()
+        private IEnumerator SpawnChunks()
         {
             if (_meshingResults.TryDequeue(out var mesh))
-                SpawnChunkRenderer(mesh, chunkPrefab);
+                yield return SpawnChunkRenderer(mesh, chunkPrefab);
 
             if (_meshingWaterResults.TryDequeue(out mesh))
-                SpawnChunkRenderer(mesh, waterChunkPrefab);
+                yield return SpawnChunkRenderer(mesh, waterChunkPrefab);
 
             if (_meshingFloraResults.TryDequeue(out mesh))
-                SpawnChunkRenderer(mesh, floraChunkPrefab);
+                yield return SpawnChunkRenderer(mesh, floraChunkPrefab);
         }
 
-        private void SpawnChunkRenderer(GeneratedMesh mesh, ChunkRenderer prefab)
+        private IEnumerator SpawnChunkRenderer(GeneratedMesh mesh, ChunkRenderer prefab)
         {
             var xPos = mesh.Chunk.Position.x * ChunkWidth;
             var yPos = mesh.Chunk.Position.y * ChunkHeight;
@@ -129,11 +129,16 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
             mesh.Chunk.Renderer = chunkObject;
             mesh.Chunk.State = ChunkState.Active;
+            yield return null;
         }
 
-        public bool SpawnChunk(Vector3Int position, int[,,] blocks)
+        public IEnumerator SpawnChunk(Vector3Int position, int[,,] blocks)
         {
-            if (_chunks.ContainsKey(position)) return false;
+            if (_chunks.ContainsKey(position))
+            {
+                yield return null;
+            }
+
             Chunk chunk = new Chunk()
             {
                 Position = position,
@@ -141,39 +146,46 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
                 State = ChunkState.Generated
             };
 
+            yield return null;
+            
             _chunks.Add(position, chunk);
 
-            return true;
+            yield return null;
         }
 
-        public bool SpawnWaterChunk(Vector3Int position, int[,,] blocks)
+        public IEnumerator SpawnWaterChunk(Vector3Int position, int[,,] blocks)
         {
-            if (_waterChunks.ContainsKey(position)) return false;
+            if (_waterChunks.ContainsKey(position)) 
+                yield return null;
             Chunk chunk = new Chunk()
             {
                 Position = position,
                 Blocks = blocks,
                 State = ChunkState.Generated
             };
-
+            
+            yield return null;
+            
             _waterChunks.Add(position, chunk);
 
-            return true;
+            yield return null;
         }
 
-        public bool SpawnFloraChunk(Vector3Int position, int[,,] blocks)
+        public IEnumerator SpawnFloraChunk(Vector3Int position, int[,,] blocks)
         {
-            if (_floraChunks.ContainsKey(position)) return false;
+            if (_floraChunks.ContainsKey(position)) yield return null;
             Chunk chunk = new Chunk()
             {
                 Position = position,
                 Blocks = blocks,
                 State = ChunkState.Generated
             };
-
+            
+            yield return null;
+            
             _floraChunks.Add(position, chunk);
 
-            return true;
+            yield return null;
         }
 
         #endregion
@@ -216,22 +228,22 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
         #region Chunk Rendering Methods
 
-        public void RenderChunks(Vector3Int position)
+        public IEnumerator RenderChunks(Vector3Int position)
         {
-            RenderChunk(position, _chunks, _meshingResults);
+            yield return RenderChunk(position, _chunks, _meshingResults);
         }
 
-        public void RenderWaterChunks(Vector3Int position)
+        public IEnumerator RenderWaterChunks(Vector3Int position)
         {
-            RenderChunk(position, _waterChunks, _meshingWaterResults);
+            yield return RenderChunk(position, _waterChunks, _meshingWaterResults);
         }
 
-        public void RenderFloraChunks(Vector3Int position)
+        public IEnumerator RenderFloraChunks(Vector3Int position)
         {
-            RenderChunk(position, _floraChunks, _meshingFloraResults);
+            yield return RenderChunk(position, _floraChunks, _meshingFloraResults);
         }
 
-        private void RenderChunk(Vector3Int position, Dictionary<Vector3Int, Chunk> chunkDict,
+        private IEnumerator RenderChunk(Vector3Int position, Dictionary<Vector3Int, Chunk> chunkDict,
             ConcurrentQueue<GeneratedMesh> meshingQueue)
         {
             var playerChunkPosition = GetChunkContainBlock(currentPosition);
@@ -248,6 +260,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
                     meshingQueue.Enqueue(mesh);
                 }
             }
+            yield return null;
         }
 
         private bool IsWithinViewDistance(Vector3Int playerChunkPosition, Vector3Int chunkPosition)
