@@ -28,6 +28,9 @@ export function handleClientMessage(data, socket) {
         case 'connect':
             handleConnect(data, socket);
             break;
+        case 'drop_inventory':
+            handleDropInventory(data, socket);
+            break;
         case 'get_chunk':
             handleGetChunk(data.position, socket);
             break;
@@ -66,6 +69,15 @@ export function handleClientMessage(data, socket) {
             break;
         default:
     }
+}
+
+function handleDropInventory(data, socket) {
+    broadcast(JSON.stringify(
+        {
+            type: 'drop_inventory',
+            position: data.position,
+            inventory: data.inventory,
+        }));
 }
 
 function handleAttack(data, socket) {
@@ -150,6 +162,7 @@ function handlePlayers(socket) {
         type: 'players_list', players: playersArray
     }));
 }
+
 /*
 function saveChunkToFile(chunkKey, chunk, waterChunk, floraChunk) {
     const filePath = path.join(chunkStorageDir, `${chunkKey}.json`);
@@ -177,7 +190,7 @@ function loadChunkFromFile(chunkKey) {
 function saveChunkToFile(chunkKey, chunk, waterChunk, floraChunk) {
     const filePath = path.join(chunkStorageDir, `${chunkKey}.mp`);
 
-    const chunkData = { chunk, waterChunk, floraChunk };
+    const chunkData = {chunk, waterChunk, floraChunk};
     const packedData = msgpack.encode(chunkData);
 
     fs.writeFileSync(filePath, packedData);

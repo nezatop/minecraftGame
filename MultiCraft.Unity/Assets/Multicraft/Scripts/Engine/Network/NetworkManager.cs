@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Multicraft.Scripts.Engine.Core.Hunger;
@@ -51,6 +52,7 @@ namespace MultiCraft.Scripts.Engine.Network
         public ConcurrentQueue<Vector3Int> ChunksToRender;
         public ConcurrentQueue<Vector3Int> ChunksToGet;
         public HashSet<Vector3Int> RequestedChunks;
+        private int _requestedChunks = 0;
 
         public bool canSpawnPlayer;
 
@@ -131,6 +133,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void Update()
         {
+            LogDebug($"{_requestedChunks}");
             if (ChunksToGet.TryDequeue(out Vector3Int chunkPosition))
             {
                 if (!RequestedChunks.Contains(chunkPosition))
@@ -141,6 +144,7 @@ namespace MultiCraft.Scripts.Engine.Network
             }
 
             if (ChunksToGet.Count > 0) return;
+            if (_requestedChunks > 0) return;
             if (NetworkWorld.Instance.ChunksLoaded < (NetworkWorld.Instance.settings.viewDistanceInChunks * 2 + 1) *
                 (NetworkWorld.Instance.settings.viewDistanceInChunks * 2 + 1))
                 return;
@@ -215,6 +219,11 @@ namespace MultiCraft.Scripts.Engine.Network
                     case "inventory":
                         HandleInventoryGet(message.RootElement);
                         break;
+                    
+                    case "drop_inventory":
+                        HandleDropInventory(message.RootElement);
+                        break;
+
 
                     case "chat":
                         HandleChat(message.RootElement);
@@ -282,9 +291,9 @@ namespace MultiCraft.Scripts.Engine.Network
             var targetQuaternion = Quaternion.Euler(targetRotation);
             player.transform.rotation = Quaternion.Lerp(player.transform.rotation, targetQuaternion, smoothSpeed);
 
-            playerAnimator.SetFloat(VelocityX, previousPosition.x - targetPosition.x);
-            playerAnimator.SetFloat(VelocityY, previousPosition.y - targetPosition.y);
-            playerAnimator.SetFloat(VelocityZ, previousPosition.z - targetPosition.z);
+            playerAnimator.SetFloat(VelocityX, velocity.x*4);
+            playerAnimator.SetFloat(VelocityY, velocity.y);
+            playerAnimator.SetFloat(VelocityZ, velocity.z*4);
         }
 
 
@@ -351,6 +360,7 @@ namespace MultiCraft.Scripts.Engine.Network
         private void HandleDamage(JsonElement data)
         {
             var damage = data.GetProperty("damage").GetInt32();
+            if(_playerController.health.health <= 0) return;
             if (_playerController) _playerController.health.TakeDamage(damage);
         }
 
@@ -471,6 +481,7 @@ namespace MultiCraft.Scripts.Engine.Network
                 playerChunkPosition.z - NetworkWorld.Instance.settings.viewDistanceInChunks <= chunkCoord.z &&
                 playerChunkPosition.z + NetworkWorld.Instance.settings.viewDistanceInChunks >= chunkCoord.z)
                 ChunksToRender.Enqueue(chunkCoord);
+            _requestedChunks--;
             yield return null;
         }
 
@@ -542,6 +553,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void RequestChunk(Vector3Int chunkPosition)
         {
+            _requestedChunks++;
             SendMessageToServer(new
             {
                 type = "get_chunk",
@@ -585,10 +597,11 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void OpenDeadMenu()
         {
+            SendDropInventory();
             UiManager.Instance.OpenCloseDead();
             _playerController.GetComponent<InteractController>().DisableScripts();
         }
-        
+
         public void RespawnPlayer()
         {
             UiManager.Instance.CloseDead();
@@ -629,6 +642,39 @@ namespace MultiCraft.Scripts.Engine.Network
                 type = "set_inventory",
                 position = new { chestPosition.x, chestPosition.y, chestPosition.z },
                 inventory = slotsJson
+            });
+        }
+        
+        
+        private void HandleDropInventory(JsonElement data)
+        {
+            var slots = JsonToInventory(data.GetProperty("inventory"));
+            var pos = Vector3Int.FloorToInt(JsonToVector3(data.GetProperty("position")));
+            pos += Vector3Int.up * 2;
+
+            foreach (var slot in slots.Where(itemInSlot => itemInSlot!= null))
+            {
+                if (slot.Item != null)
+                {
+                    NetworkWorld.Instance.DropItem(pos, slot.Item, slot.Amount);
+                }
+            }
+        }
+
+        private void SendDropInventory()
+        {
+            var inventory = _playerController.GetComponent<Inventory>().Slots;
+            var json = JsonToInventory(inventory);
+            SendMessageToServer(new
+            {
+                type = "drop_inventory",
+                position = new
+                {
+                    x = _player.transform.position.x,
+                    y = _player.transform.position.y,
+                    z = _player.transform.position.z
+                },
+                inventory = json
             });
         }
 

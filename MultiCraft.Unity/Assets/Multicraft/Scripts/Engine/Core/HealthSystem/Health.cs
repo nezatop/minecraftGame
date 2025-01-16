@@ -12,8 +12,8 @@ namespace MultiCraft.Scripts.Engine.Core.HealthSystem
 
         public float maxHealth = 10;
 
-        public event Action OnDeath;
-        public event Action<int> OnDamage;
+        public Action OnDeath;
+        public Action<int> OnDamage;
 
         public bool haveHunger = true;
         public SkinnedMeshRenderer meshRenderer;

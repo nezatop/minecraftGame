@@ -156,18 +156,24 @@ namespace MultiCraft.Scripts.Engine.Network.Player
             GameObject hitObject = hitInfo.collider.gameObject;
 
 
+            var selectedItem = _playerInventory.GetSelectedItem();
+            var damage = selectedItem.Item.Damage;
             var Mob = hitObject.GetComponent<Mob>();
             if (Mob != null)
             {
                 Debug.Log($"Hit object: {hitObject.name}");
-                StartCoroutine(Mob.TakeDamage(1, -hitInfo.normal));
+                StartCoroutine(Mob.TakeDamage(damage, -hitInfo.normal));
             }
             
             var otherPlayer = hitObject.GetComponent<OtherNetPlayer>();
             if (otherPlayer != null)
             {
-                Debug.Log($"Hit object: {hitObject.name}");
-                NetworkManager.Instance.ServerMassageAttack(1, otherPlayer.playerName);
+                Debug.Log($"Hit object: {hitObject.name}"); 
+                if(otherPlayer.health.health > 0)
+                {
+                    otherPlayer.health.TakeDamage(damage);
+                    NetworkManager.Instance.ServerMassageAttack(damage, otherPlayer.playerName);
+                }
             }
 
             return true;
