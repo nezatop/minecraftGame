@@ -175,7 +175,7 @@ namespace MultiCraft.Scripts.Engine.Core.Inventories
 
         public void Clear()
         {
-            foreach (var slot in Slots)
+            foreach (var slot in Slots.Where(slot => slot != null))
             {
                 slot.Item = null;
                 slot.Amount = 0;

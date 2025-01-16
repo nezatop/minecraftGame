@@ -196,7 +196,7 @@ namespace MultiCraft.Scripts.Engine.Core.Worlds
             _currentPlayersPosition = _players
                 .Select(t => GetChunkContainBlock(Vector3Int.FloorToInt(t.transform.position))).ToList();
 
-            player.GetComponent<Health>().OnDeath += RespawnPlayers;
+            player.GetComponent<Health>().OnDeath += OpenDeadMenu;
 
 
             player.GetComponent<PlayerController>().variableJoystick = moveJoystick;
@@ -219,9 +219,18 @@ namespace MultiCraft.Scripts.Engine.Core.Worlds
             SpawnWaterChunks();
             SpawnFloraChunks();
         }
+        
+        private void OpenDeadMenu()
+        {
+            UiManager.Instance.OpenCloseDead();
+            _players[0].GetComponent<InteractController>().DisableScripts();
+        }
 
         public void RespawnPlayers()
         {
+            UiManager.Instance.CloseDead();
+            _players[0].GetComponent<InteractController>().EnableScripts();
+            
             var inv = _players[0].GetComponent<Inventory>();
             foreach (var itemInSlot in inv.Slots)
             {
@@ -238,7 +247,8 @@ namespace MultiCraft.Scripts.Engine.Core.Worlds
             var playerHealth = _players[0].GetComponent<Health>();
             var playerHungerSystem = _players[0].GetComponent<HungerSystem>();
             playerHungerSystem.hunger = playerHungerSystem.maxHunger - 3;
-            playerHealth.health = playerHealth.maxHealth;
+            playerHealth.TakeDamage(-(int)playerHealth.maxHealth);
+            
         }
 
         private void SpawnChunks()

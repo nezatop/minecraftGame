@@ -12,7 +12,7 @@ const NUM_ANIMALS = 20;
 const MOVE_INTERVAL = 3000;
 
 
-const worldGenerator = new WorldGenerator(Config, 7898465);
+const worldGenerator = new WorldGenerator(Config);
 
 export function getChunkIndex(position) {
     const x = position.x % 16;

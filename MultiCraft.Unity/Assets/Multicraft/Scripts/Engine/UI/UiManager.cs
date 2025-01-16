@@ -6,6 +6,7 @@ using Multicraft.Scripts.Engine.Core.Hunger;
 using MultiCraft.Scripts.Engine.Core.Inventories;
 using MultiCraft.Scripts.Engine.Core.Player;
 using MultiCraft.Scripts.Engine.Core.Worlds;
+using MultiCraft.Scripts.Engine.Network;
 using MultiCraft.Scripts.Engine.Utils.Commands;
 using MultiCraft.Scripts.Engine.Utils.MulticraftDebug;
 using Unity.VisualScripting;
@@ -21,7 +22,7 @@ namespace MultiCraft.Scripts.Engine.UI
         public InventoryWindow InventoryWindow;
         public ChatWindow ChatWindow;
         public GameObject LoadingScreen;
-        
+
         public GameObject jumpButton;
 
         public HealthView HealthView;
@@ -33,7 +34,10 @@ namespace MultiCraft.Scripts.Engine.UI
         public bool inventoryUpdated = false;
 
         public PlayerController PlayerController;
-        private MultiCraft.Scripts.Engine.Network.Player.DestroyAndPlaceBlockController NetDestroyAndPlaceBlockController;
+
+        private MultiCraft.Scripts.Engine.Network.Player.DestroyAndPlaceBlockController
+            NetDestroyAndPlaceBlockController;
+
         private DestroyAndPlaceBlockController DestroyAndPlaceBlockController;
 
         private Vector3Int _chestPosition;
@@ -43,6 +47,7 @@ namespace MultiCraft.Scripts.Engine.UI
         public bool chatWindowOpen = false;
 
         private bool isMobile => SystemInfo.deviceType != DeviceType.Desktop;
+
         private void Awake()
         {
             LoadingScreen.SetActive(true);
@@ -70,7 +75,7 @@ namespace MultiCraft.Scripts.Engine.UI
 
         public void Jump()
         {
-            if(PlayerController != null)
+            if (PlayerController != null)
                 PlayerController.HandleJump();
         }
 
@@ -94,21 +99,23 @@ namespace MultiCraft.Scripts.Engine.UI
 
         private void OpenInventory()
         {
-            if(!isMobile)
+            if (!isMobile)
             {
                 Cursor.lockState = CursorLockMode.Confined;
                 Cursor.visible = true;
             }
+
             InventoryWindow.Open();
         }
 
         private void CloseInventory()
         {
-            if(!isMobile)
+            if (!isMobile)
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
+
             InventoryWindow.Close();
         }
 
@@ -136,17 +143,19 @@ namespace MultiCraft.Scripts.Engine.UI
                 Cursor.lockState = CursorLockMode.Confined;
                 Cursor.visible = true;
             }
+
             chatWindowOpen = true;
             ChatWindow.Open();
         }
 
         private void CloseChat()
         {
-            if(!isMobile)
+            if (!isMobile)
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
+
             chatWindowOpen = false;
             ChatWindow.Close();
         }
@@ -175,11 +184,12 @@ namespace MultiCraft.Scripts.Engine.UI
 
         public void CloseChest()
         {
-            if(!isMobile)
+            if (!isMobile)
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
+
             InventoryWindow.CloseChest();
         }
 
@@ -223,10 +233,57 @@ namespace MultiCraft.Scripts.Engine.UI
 
         #endregion
 
+        #region GameOverMenu
+        public void OpenCloseDead()
+        {
+            CloseInventory();
+            CloseChest();
+            CloseChat();
+            if (GameOverScreen.activeSelf)
+            {
+                CloseDead();
+            }
+            else
+            {
+                OpenDead();
+            }
+        }
+
+        private void OpenDead()
+        {
+            Cursor.lockState = CursorLockMode.Confined;
+            Cursor.visible = true;
+            GameOverScreen.SetActive(true);
+        }
+
+        public void CloseDead()
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            GameOverScreen.SetActive(false);
+        }
+        #endregion
+        
+        #region Buttons
+
         public void MainMenu()
         {
             SceneManager.LoadScene("MainMenu");
         }
+        
+        public void Restart()
+        {
+            if (NetworkManager.Instance != null)
+            {
+                NetworkManager.Instance.RespawnPlayer();
+            }
+            if (World.Instance != null)
+            {
+                World.Instance.RespawnPlayers();
+            }
+        }
+
+        #endregion
 
         public void CloseLoadingScreen()
         {

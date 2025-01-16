@@ -247,7 +247,8 @@ export function loadConfig() {
 }
 
 export class WorldGenerator {
-    constructor(config, seed) {
+    constructor(config) {
+        const seed = Math.floor(new Date().getTime());
         this.config = config;
         this.biomes = this.initializeBiomes();
         this.surfaceNoise = this.initializeNoiseGenerators(config.SurfaceNoiseOctaves, seed);

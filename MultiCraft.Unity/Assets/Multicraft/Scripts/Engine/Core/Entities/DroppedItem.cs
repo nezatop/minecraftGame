@@ -51,13 +51,14 @@ namespace MultiCraft.Scripts.Engine.Core.Entities
         private void OnTriggerStay(Collider other)
         {
             if (Time.time - _spawnTime <= delayTime) return;
+            /*
             if (other.CompareTag("Player"))
             {
                 if (other.GetComponent<Inventory>().AddItem(Item))
                 {
                     Destroy(gameObject);
                 }
-            }
+            }*/
             if (other.CompareTag("DroppedItem"))
             {
                 var otherDroppedItem = other.GetComponent<DroppedItem>();

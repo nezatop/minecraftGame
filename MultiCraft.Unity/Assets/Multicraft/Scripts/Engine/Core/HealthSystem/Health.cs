@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using Multicraft.Scripts.Engine.Core.Hunger;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -26,14 +27,20 @@ namespace MultiCraft.Scripts.Engine.Core.HealthSystem
         {
             if (haveHunger && health > 0) gameObject.GetComponent<HungerSystem>().onHungerZero -= TakeDamage;
         }
-
         public void TakeDamage(int damage)
         {
-            var material = meshRenderer.material;
-            material.color = Color.red;
+            StartCoroutine(ColorRes());
             health = Mathf.Clamp(health - damage, 0, maxHealth);
             if (health <= 0) OnDeath?.Invoke();
             OnDamage?.Invoke((int)health);
+        }
+
+        private IEnumerator ColorRes()
+        {
+            
+            var material = meshRenderer.material;
+            material.color = Color.red;
+            yield return new WaitForSeconds(0.1f);
             material.color = Color.white;
         }
 

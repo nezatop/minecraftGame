@@ -15,6 +15,7 @@ using MultiCraft.Scripts.Engine.Utils;
 using MultiCraft.Scripts.UI.Authorize;
 using UnityEngine.SceneManagement;
 using UnityWebSocket;
+using InteractController = MultiCraft.Scripts.Engine.Network.Player.InteractController;
 
 namespace MultiCraft.Scripts.Engine.Network
 {
@@ -159,7 +160,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void OnDestroy()
         {
-            _playerController.health.OnDeath -= RespawnPlayer;
+            _playerController.health.OnDeath -= OpenDeadMenu;
         }
 
         #region HandleServerMessage
@@ -269,18 +270,21 @@ namespace MultiCraft.Scripts.Engine.Network
             var targetRotation = JsonToVector3(data.GetProperty("rotation"));
             var velocity = JsonToVector3(data.GetProperty("velocity"));
 
+            
+            
             if (playerId == null || playerId == playerName ||
                 !_otherPlayers.TryGetValue(playerId, out var player)) return;
             var playerAnimator = player.animator;
             var smoothSpeed = 0.1f;
+            var previousPosition = player.transform.position;
             player.transform.position = targetPosition;
 
             var targetQuaternion = Quaternion.Euler(targetRotation);
             player.transform.rotation = Quaternion.Lerp(player.transform.rotation, targetQuaternion, smoothSpeed);
 
-            playerAnimator.SetFloat(VelocityX, velocity.x);
-            playerAnimator.SetFloat(VelocityY, velocity.y);
-            playerAnimator.SetFloat(VelocityZ, velocity.z);
+            playerAnimator.SetFloat(VelocityX, previousPosition.x - targetPosition.x);
+            playerAnimator.SetFloat(VelocityY, previousPosition.y - targetPosition.y);
+            playerAnimator.SetFloat(VelocityZ, previousPosition.z - targetPosition.z);
         }
 
 
@@ -565,7 +569,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
             NetworkWorld.Instance.player = _player;
 
-            _playerController.health.OnDeath += RespawnPlayer;
+            _playerController.health.OnDeath += OpenDeadMenu;
 
             UiManager.Instance.PlayerController = _playerController;
             UiManager.Instance.Initialize();
@@ -579,10 +583,18 @@ namespace MultiCraft.Scripts.Engine.Network
             StartCoroutine(SendPlayerPositionRepeatedly());
         }
 
-        private void RespawnPlayer()
+        private void OpenDeadMenu()
         {
+            UiManager.Instance.OpenCloseDead();
+            _playerController.GetComponent<InteractController>().DisableScripts();
+        }
+        
+        public void RespawnPlayer()
+        {
+            UiManager.Instance.CloseDead();
+            _playerController.GetComponent<InteractController>().EnableScripts();
             _player.transform.position = _startPosition;
-            _playerController.health.health = _playerController.health.maxHealth;
+            _playerController.health.TakeDamage(-(int)_playerController.health.maxHealth);
             _playerController.GetComponent<HungerSystem>().hunger =
                 _playerController.GetComponent<HungerSystem>().maxHunger;
         }
@@ -784,9 +796,9 @@ namespace MultiCraft.Scripts.Engine.Network
                 },
                 velocity = new
                 {
-                    player.controller.velocity.x,
+                    player.horizontalInput,
                     player.controller.velocity.y,
-                    player.controller.velocity.z,
+                    player.verticalInput,
                 }
             });
         }

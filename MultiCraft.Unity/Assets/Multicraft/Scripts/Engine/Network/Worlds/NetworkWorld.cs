@@ -217,11 +217,11 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
                         if (!NetworkManager.Instance.ChunksToGet.Contains(chunkPos))
                             NetworkManager.Instance.ChunksToGet.Enqueue(chunkPos);
+                        
+                        yield return null;
                     }
                 }
             }
-
-            yield return null;
         }
 
         #endregion

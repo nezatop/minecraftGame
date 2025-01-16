@@ -31,8 +31,8 @@ namespace MultiCraft.Scripts.Engine.Core.Player
         private bool _isGrounded;
 
         public HandRenderer handRenderer;
-        public DroppedItem DroppedItemPrefab;
-        [SerializeField] private float DropForce = 5f;
+        public DroppedItem droppedItemPrefab;
+        public float dropForce = 5f;
 
         private Inventory _inventory;
         private float _fallStartY;
@@ -48,11 +48,14 @@ namespace MultiCraft.Scripts.Engine.Core.Player
         private const int MinValue = 0;
         private const int MaxValue = 8;
         
-        
         public VariableJoystick variableJoystick;
         public bool isMobile = false;
 
         public CameraController cameraController;
+        
+        
+        public float horizontalInput;
+        public float verticalInput;
         private void Start()
         {
             
@@ -77,6 +80,11 @@ namespace MultiCraft.Scripts.Engine.Core.Player
 
         private void Update()
         {
+            if (Input.GetKeyDown(KeyCode.H))
+            {
+                health.TakeDamage(1);
+            }
+            
             HandleMovement();
             HandleItemInteraction();
             HandleAnimation();
@@ -100,15 +108,35 @@ namespace MultiCraft.Scripts.Engine.Core.Player
             _isGrounded = controller.isGrounded;
             animator.SetBool("Grounded", _isGrounded);
 
-            if (_isGrounded && _velocity.y < 0)
-                _velocity.y = -2f;
+            if (_isGrounded)
+            {
+                if (_velocity.y < 0)
+                    _velocity.y = -2f;
+
+                // Проверяем, был ли игрок в состоянии падения
+                if (_isFalling)
+                {
+                    float fallDistance = _fallStartY - transform.position.y;
+                    if (fallDistance > fallThreshold)
+                    {
+                        ApplyFallDamage(fallDistance);
+                    }
+                    _isFalling = false; // Завершаем состояние падения
+                }
+            }
+            else
+            {
+                if (!_isFalling) // Если игрок только начал падать
+                {
+                    _isFalling = true;
+                    _fallStartY = transform.position.y; // Сохраняем начальную высоту падения
+                }
+            }
         }
+
 
         private Vector3 GetInput()
         {
-            float horizontalInput;
-            float verticalInput;
-
             if (isMobile)
             {
                 horizontalInput = variableJoystick.Horizontal;
@@ -203,10 +231,10 @@ namespace MultiCraft.Scripts.Engine.Core.Player
             {
                 var item = _inventory.RemoveSelectedItem().Item;
                 var camera = transform.GetChild(0);
-                var droppedItem = Instantiate(DroppedItemPrefab, camera.position + Vector3.down * 0.2f,
+                var droppedItem = Instantiate(droppedItemPrefab, camera.position + Vector3.down * 0.2f,
                     Quaternion.identity);
                 Rigidbody rb = droppedItem.GetComponent<Rigidbody>();
-                Vector3 force = camera.transform.forward.normalized * DropForce;
+                Vector3 force = camera.transform.forward.normalized * dropForce;
                 rb.AddForce(force, ForceMode.Impulse);
                 droppedItem.Item = new ItemInSlot(item, 1);
                 droppedItem.Init();
