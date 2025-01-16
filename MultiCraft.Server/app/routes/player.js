@@ -20,6 +20,7 @@ const __dirname = "./"
 const chunkStorageDir = path.join(__dirname, 'chunks');
 
 if (!fs.existsSync(chunkStorageDir)) {
+    fs.rmSync(chunkStorageDir, { recursive: true });
     fs.mkdirSync(chunkStorageDir, {recursive: true});
 }
 
