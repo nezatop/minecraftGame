@@ -796,9 +796,9 @@ namespace MultiCraft.Scripts.Engine.Network
                 },
                 velocity = new
                 {
-                    player.horizontalInput,
+                    x = player.horizontalInput,
                     player.controller.velocity.y,
-                    player.verticalInput,
+                    z = player.verticalInput,
                 }
             });
         }
