@@ -21,9 +21,6 @@ const chunkStorageDir = path.join(__dirname, 'chunks');
 
 if (!fs.existsSync(chunkStorageDir)) {
     fs.mkdirSync(chunkStorageDir, {recursive: true});
-}else{
-    fs.rmSync(chunkStorageDir, {recursive: true});
-    fs.mkdirSync(chunkStorageDir, {recursive: true});
 }
 
 export function handleClientMessage(data, socket) {
