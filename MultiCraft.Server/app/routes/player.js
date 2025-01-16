@@ -15,7 +15,7 @@ import msgpack from '@msgpack/msgpack';
 import {WebSocketServer} from 'ws'; // Импортируем WebSocketServer
 
 
-const __dirname = "D:\\Work\\Unity\\minecraftGame\\MultiCraft.Server\\app"
+const __dirname = "./"
 
 const chunkStorageDir = path.join(__dirname, 'chunks');
 
