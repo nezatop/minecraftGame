@@ -183,7 +183,7 @@ export const Config = {
     ],
     WaterNoiseOctaves: {
         NoiseType: "Cellular",
-        Frequency: 0.00100000003,
+        Frequency: 0.00800000003,
         Amplitude: 2,
         FractalType: "Ridged",
         FractalOctaves: 1,
