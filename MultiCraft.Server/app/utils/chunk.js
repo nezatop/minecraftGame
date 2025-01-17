@@ -1,4 +1,4 @@
-import {WorldGenerator, loadConfig, Config} from './WorldGenerator.js';
+import {WorldGenerator, Config} from './WorldGenerator.js';
 
 export const clients = new Map();
 export const chunkMap = new Map();
