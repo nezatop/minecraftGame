@@ -5,7 +5,7 @@ import fs from 'fs';
 export const Config = {
     BaseHeight: 64,
     WaterLevel: 63,
-    RiverChance: -0.5,
+    RiverChance: 0.5,
     TreeFrequency: 0.5,
     Biomes: [
         {

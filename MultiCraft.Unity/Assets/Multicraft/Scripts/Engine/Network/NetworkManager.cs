@@ -219,7 +219,7 @@ namespace MultiCraft.Scripts.Engine.Network
                     case "inventory":
                         HandleInventoryGet(message.RootElement);
                         break;
-                    
+
                     case "drop_inventory":
                         HandleDropInventory(message.RootElement);
                         break;
@@ -279,8 +279,7 @@ namespace MultiCraft.Scripts.Engine.Network
             var targetRotation = JsonToVector3(data.GetProperty("rotation"));
             var velocity = JsonToVector3(data.GetProperty("velocity"));
 
-            
-            
+
             if (playerId == null || playerId == playerName ||
                 !_otherPlayers.TryGetValue(playerId, out var player)) return;
             var playerAnimator = player.animator;
@@ -291,9 +290,9 @@ namespace MultiCraft.Scripts.Engine.Network
             var targetQuaternion = Quaternion.Euler(targetRotation);
             player.transform.rotation = Quaternion.Lerp(player.transform.rotation, targetQuaternion, smoothSpeed);
 
-            playerAnimator.SetFloat(VelocityX, velocity.x*4);
+            playerAnimator.SetFloat(VelocityX, velocity.x * 4);
             playerAnimator.SetFloat(VelocityY, velocity.y);
-            playerAnimator.SetFloat(VelocityZ, velocity.z*4);
+            playerAnimator.SetFloat(VelocityZ, velocity.z * 4);
         }
 
 
@@ -360,7 +359,7 @@ namespace MultiCraft.Scripts.Engine.Network
         private void HandleDamage(JsonElement data)
         {
             var damage = data.GetProperty("damage").GetInt32();
-            if(_playerController.health.health <= 0) return;
+            if (_playerController.health.health <= 0) return;
             if (_playerController) _playerController.health.TakeDamage(damage);
         }
 
@@ -460,7 +459,7 @@ namespace MultiCraft.Scripts.Engine.Network
             JsonElement blocksJson = data.GetProperty("blocks");
             JsonElement waterBlocksJson = data.GetProperty("waterChunk");
             JsonElement floraBlocksJson = data.GetProperty("floraChunk");
-            
+
             // Генерация блоков
             yield return StartCoroutine(Blocks(blocksJson, result => blocks = result));
             yield return StartCoroutine(Blocks(waterBlocksJson, result => waterBlocks = result));
@@ -470,7 +469,7 @@ namespace MultiCraft.Scripts.Engine.Network
             StartCoroutine(NetworkWorld.Instance.SpawnChunk(chunkCoord, blocks));
             StartCoroutine(NetworkWorld.Instance.SpawnWaterChunk(chunkCoord, waterBlocks));
             StartCoroutine(NetworkWorld.Instance.SpawnFloraChunk(chunkCoord, floraBlocks));
-            
+
             if (_player)
                 _playerPosition = _player.transform.position;
 
@@ -599,6 +598,7 @@ namespace MultiCraft.Scripts.Engine.Network
         {
             SendDropInventory();
             UiManager.Instance.OpenCloseDead();
+            _player.GetComponent<Inventory>().Clear();
             _playerController.GetComponent<InteractController>().DisableScripts();
         }
 
@@ -644,15 +644,15 @@ namespace MultiCraft.Scripts.Engine.Network
                 inventory = slotsJson
             });
         }
-        
-        
+
+
         private void HandleDropInventory(JsonElement data)
         {
             var slots = JsonToInventory(data.GetProperty("inventory"));
             var pos = Vector3Int.FloorToInt(JsonToVector3(data.GetProperty("position")));
             pos += Vector3Int.up * 2;
 
-            foreach (var slot in slots.Where(itemInSlot => itemInSlot!= null))
+            foreach (var slot in slots.Where(itemInSlot => itemInSlot != null))
             {
                 if (slot.Item != null)
                 {
@@ -706,12 +706,19 @@ namespace MultiCraft.Scripts.Engine.Network
                 }
                 else
                 {
-                    item = new ItemJson()
+                    if (slot.Item != null)
+                        item = new ItemJson()
+                        {
+                            Type = slot.Item.Name,
+                            Count = slot.Amount,
+                            Durability = slot.Durability,
+                        };
+                    else
                     {
-                        Type = slot.Item.Name,
-                        Count = slot.Amount,
-                        Durability = slot.Durability,
-                    };
+                        item.Type = "null";
+                        item.Count = 0;
+                        item.Durability = 0;
+                    }
                 }
 
                 slotsJson.Add(item);
@@ -723,24 +730,41 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private List<ItemInSlot> JsonToInventory(JsonElement json)
         {
-            List<ItemInSlot> inventory = new List<ItemInSlot>();
+            var inventory = new List<ItemInSlot>();
 
-            List<ItemJson> items = json.Deserialize<List<ItemJson>>();
-
-            foreach (var itemJson in items)
+            try
             {
-                var item = new ItemInSlot
+                if (json.ValueKind == JsonValueKind.String)
                 {
-                    Amount = itemJson.Count,
-                    Durability = itemJson.Durability,
-                    Item = itemJson.Type != "null" ? ResourceLoader.Instance.GetItem(itemJson.Type) : null
-                };
+                    string jsonString = json.GetString();
+                    var items = JsonSerializer.Deserialize<List<ItemJson>>(jsonString);
 
-                inventory.Add(item);
+                    foreach (var itemJson in items)
+                    {
+                        var item = new ItemInSlot
+                        {
+                            Amount = itemJson.Count,
+                            Durability = itemJson.Durability,
+                            Item = itemJson.Type != "null" ? ResourceLoader.Instance.GetItem(itemJson.Type) : null
+                        };
+
+                        inventory.Add(item);
+                    }
+                }
+                else
+                {
+                    Debug.LogError($"Unexpected JSON ValueKind: {json.ValueKind}");
+                }
+            }
+            catch (JsonException ex)
+            {
+                Debug.LogError($"Failed to deserialize JSON: {ex.Message}");
+                Debug.LogError($"JSON content: {json}");
             }
 
             return inventory;
         }
+
 
         private Vector3 JsonToVector3(JsonElement json)
         {

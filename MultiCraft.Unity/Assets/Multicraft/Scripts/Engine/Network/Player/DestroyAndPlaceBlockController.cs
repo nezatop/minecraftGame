@@ -157,7 +157,12 @@ namespace MultiCraft.Scripts.Engine.Network.Player
 
 
             var selectedItem = _playerInventory.GetSelectedItem();
-            var damage = selectedItem.Item.Damage;
+            var damage = 1;
+            if(selectedItem != null)
+                if(selectedItem.Item != null)
+                    damage = selectedItem.Item.Damage;
+            if(damage == 0)
+                damage = 1;
             var Mob = hitObject.GetComponent<Mob>();
             if (Mob != null)
             {

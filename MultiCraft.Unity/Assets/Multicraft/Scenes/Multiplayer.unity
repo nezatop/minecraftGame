@@ -804,8 +804,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   settings:
-    viewDistanceInChunks: 3
-    loadDistance: 5
+    viewDistanceInChunks: 1
+    loadDistance: 2
   chunkPrefab: {fileID: 6950558421887607551, guid: a313ccba8d75ac74a84e6851abdc7ed5, type: 3}
   waterChunkPrefab: {fileID: 6133701986684697518, guid: 78d2594e4cc949e4a9b917c0ecc2955d, type: 3}
   floraChunkPrefab: {fileID: 2767855893500059531, guid: 0106e4a14b0bc554aa8349b9da243714, type: 3}

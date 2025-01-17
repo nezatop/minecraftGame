@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 namespace Multicraft.Scripts.Engine.Core.Hunger
@@ -8,16 +9,17 @@ namespace Multicraft.Scripts.Engine.Core.Hunger
         public float maxHunger = 100; // Максимальный уровень голода
         public float hunger = 100; // Текущий уровень голода
         public float hungerDecreaseRate = 1f; // Скорость уменьшения голода (ед/сек)
+        public float hungerDecreaseTime = 1f; // интервал уменьшения голода сек
 
         public Action<int> onHungerChanged;
         public Action onHungerZero;
         
         private void Update()
         {
-            HungerDecrease();
+            StartCoroutine(HungerDecrease());
         }
 
-        public void HungerDecrease()
+        public IEnumerator HungerDecrease()
         {
             // Уменьшение голода со временем
             hunger -= hungerDecreaseRate * Time.deltaTime;
@@ -30,6 +32,7 @@ namespace Multicraft.Scripts.Engine.Core.Hunger
             }
             
             onHungerChanged?.Invoke((int)hunger);
+            yield return new WaitForSeconds(hungerDecreaseTime);
         }
 
         public void EatFood(int foodValue)
