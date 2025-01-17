@@ -4,7 +4,7 @@ import fs from 'fs';
 
 export const Config = {
     BaseHeight: 64,
-    WaterLevel: 63,
+    WaterLevel: 61,
     RiverChance: 0.8,
     TreeFrequency: 0.5,
     Biomes: [
@@ -198,7 +198,7 @@ export const Config = {
         {
             NoiseType: "OpenSimplex2S",
             Frequency: 0.0120000001,
-            Amplitude: 6,
+            Amplitude: 2,
             FractalType: "None",
             FractalOctaves: 0,
             FractalGain: 0,
@@ -211,7 +211,7 @@ export const Config = {
         {
             NoiseType: "OpenSimplex2S",
             Frequency: 0.0199999996,
-            Amplitude: 10,
+            Amplitude: 4,
             FractalType: "None",
             FractalOctaves: 0,
             FractalGain: 0,
@@ -223,7 +223,7 @@ export const Config = {
         },
         {
             NoiseType: "Perlin",
-            Frequency: 1,
+            Frequency: 0.2,
             Amplitude: 2,
             FractalType: "None",
             FractalOctaves: 0,
