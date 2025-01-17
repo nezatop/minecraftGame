@@ -3,6 +3,7 @@ import { JSON_FILE_PATH } from '../config.js';
 import { PlayerData } from '../models/player.js';
 
 export const playerData = new Map();
+export const SavedPlayerData = new Map();
 
 export function loadPlayerData() {
     if (fs.existsSync(JSON_FILE_PATH)) {

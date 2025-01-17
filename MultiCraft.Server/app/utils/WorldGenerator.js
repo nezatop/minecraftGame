@@ -5,7 +5,7 @@ import fs from 'fs';
 export const Config = {
     BaseHeight: 64,
     WaterLevel: 63,
-    RiverChance: 0.5,
+    RiverChance: 0.8,
     TreeFrequency: 0.5,
     Biomes: [
         {
@@ -235,15 +235,6 @@ export const Config = {
             DomainWarpAmplitude: 0
         }
     ]
-}
-export function loadConfig() {
-    try {
-        const data = fs.readFileSync('utils/WorldGeneratorSettings.json', 'utf-8'); // Чтение файла
-        return JSON.parse(data); // Парсинг и возврат объекта
-    } catch (error) {
-        console.error('Failed to load config file:', error);
-        return null; // Возвращаем null в случае ошибки
-    }
 }
 
 export class WorldGenerator {
