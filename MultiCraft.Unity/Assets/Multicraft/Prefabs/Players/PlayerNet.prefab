@@ -629,10 +629,13 @@ MonoBehaviour:
   droppedItemPrefab: {fileID: 7938290796487471727, guid: fca637bc470e974498b1b97fbaeda5bd, type: 3}
   dropForce: 5
   health: {fileID: 5341370029845805918}
+  hunger: {fileID: 3440537931468962920}
   animator: {fileID: 3668425676564365382}
   variableJoystick: {fileID: 0}
   isMobile: 0
   cameraController: {fileID: 424801017422289852}
+  horizontalInput: 0
+  verticalInput: 0
 --- !u!114 &5341370029845805918
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -677,6 +680,7 @@ MonoBehaviour:
   maxHunger: 10
   hunger: 10
   hungerDecreaseRate: 0.1
+  hungerDecreaseTime: 1
 --- !u!114 &7853180868546638781
 MonoBehaviour:
   m_ObjectHideFlags: 0

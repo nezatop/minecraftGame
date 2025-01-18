@@ -1,6 +1,7 @@
 ﻿using System;
 using MultiCraft.Scripts.Engine.Core.Entities;
 using MultiCraft.Scripts.Engine.Core.HealthSystem;
+using Multicraft.Scripts.Engine.Core.Hunger;
 using MultiCraft.Scripts.Engine.Core.Inventories;
 using MultiCraft.Scripts.Engine.Core.MeshBuilders;
 using MultiCraft.Scripts.Engine.Utils;
@@ -38,6 +39,7 @@ namespace MultiCraft.Scripts.Engine.Core.Player
         private float _fallStartY;
         private bool _isFalling;
         public Health health;
+        public HungerSystem hunger;
 
         private float _stepTimer;
 
@@ -52,7 +54,6 @@ namespace MultiCraft.Scripts.Engine.Core.Player
         public bool isMobile = false;
 
         public CameraController cameraController;
-        
         
         public float horizontalInput;
         public float verticalInput;
@@ -80,14 +81,18 @@ namespace MultiCraft.Scripts.Engine.Core.Player
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.H))
-            {
-                health.TakeDamage(1);
-            }
-            
+            HandleHeal();
             HandleMovement();
             HandleItemInteraction();
             HandleAnimation();
+        }
+        
+        private void HandleHeal()
+        {
+            if (hunger.hunger > 0.5 * hunger.maxHunger)
+            {
+                health.Heal(1);
+            }
         }
 
         private void HandleMovement()

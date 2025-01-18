@@ -51,5 +51,10 @@ namespace MultiCraft.Scripts.Engine.Core.HealthSystem
             if (health <= 0) OnDeath?.Invoke();
             OnDamage?.Invoke((int)health);
         }
+
+        public void Heal(int heal)
+        {
+            health = Mathf.Clamp(health + heal, 0, maxHealth);
+        }
     }
 }

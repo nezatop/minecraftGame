@@ -152,7 +152,7 @@ MonoBehaviour:
   maxHealth: 10
   drop:
     item: {fileID: 11400000, guid: ca645a33551b2fb459f61965b0006b8a, type: 2}
-    amount: 0
+    amount: 1
   maxMoveSpeed: 2
   moveSpeed: 2
   jumpForce: 5

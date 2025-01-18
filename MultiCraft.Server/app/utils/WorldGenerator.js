@@ -4,7 +4,7 @@ import fs from 'fs';
 
 export const Config = {
     BaseHeight: 64,
-    WaterLevel: 61,
+    WaterLevel: 62,
     RiverChance: 0.8,
     TreeFrequency: 0.5,
     Biomes: [
@@ -31,7 +31,7 @@ export const Config = {
             treeChance: [
                 60
             ],
-            biomeChance: 0.160999998,
+            biomeChance: 0.78,
             fullFloraChance: 100,
             floraIndex: 0,
             floraZoneScale: 0,
@@ -120,7 +120,7 @@ export const Config = {
             treeChance: [
                 75
             ],
-            biomeChance: 0.226999998,
+            biomeChance: 0.90,
             fullFloraChance: 1,
             floraIndex: 0,
             floraZoneScale: 0,
@@ -142,7 +142,7 @@ export const Config = {
     ],
     BiomeNoiseOctaves: {
         NoiseType: "Cellular",
-        Frequency: 0.00700000022,
+        Frequency: 0.01200000022,
         Amplitude: 2,
         FractalType: "DomainWarpProgressive",
         FractalOctaves: 6,
@@ -197,8 +197,8 @@ export const Config = {
     SurfaceNoiseOctaves: [
         {
             NoiseType: "OpenSimplex2S",
-            Frequency: 0.0120000001,
-            Amplitude: 2,
+            Frequency: 0.080000001,
+            Amplitude: 4,
             FractalType: "None",
             FractalOctaves: 0,
             FractalGain: 0,
@@ -210,8 +210,8 @@ export const Config = {
         },
         {
             NoiseType: "OpenSimplex2S",
-            Frequency: 0.0199999996,
-            Amplitude: 4,
+            Frequency: 0.013,
+            Amplitude: 6,
             FractalType: "None",
             FractalOctaves: 0,
             FractalGain: 0,
