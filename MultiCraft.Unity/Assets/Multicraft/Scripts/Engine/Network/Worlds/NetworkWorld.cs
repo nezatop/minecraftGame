@@ -34,8 +34,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
         #region Chunk Dictionaries
 
-        [Header("Chunks Dictionary")] 
-        public int ChunksLoaded => _chunks.Count;
+        [Header("Chunks Dictionary")] public int ChunksLoaded => _chunks.Count;
         private Dictionary<Vector3Int, Chunk> _chunks;
         private Dictionary<Vector3Int, Chunk> _waterChunks;
         private Dictionary<Vector3Int, Chunk> _floraChunks;
@@ -48,7 +47,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
         public ChunkRenderer waterChunkPrefab;
         public ChunkRenderer floraChunkPrefab;
         public DroppedItem droppedItemPrefab;
-        
+
         #endregion
 
         #region Concurrent Queues for Meshing Results
@@ -135,9 +134,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
         public IEnumerator SpawnChunk(Vector3Int position, int[,,] blocks)
         {
             if (_chunks.ContainsKey(position))
-            {
-                yield return null;
-            }
+                yield break;
 
             Chunk chunk = new Chunk()
             {
@@ -147,7 +144,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
             };
 
             yield return null;
-            
+
             _chunks.Add(position, chunk);
 
             yield return null;
@@ -155,17 +152,17 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
         public IEnumerator SpawnWaterChunk(Vector3Int position, int[,,] blocks)
         {
-            if (_waterChunks.ContainsKey(position)) 
-                yield return null;
+            if (_waterChunks.ContainsKey(position))
+                yield break;
             Chunk chunk = new Chunk()
             {
                 Position = position,
                 Blocks = blocks,
                 State = ChunkState.Generated
             };
-            
+
             yield return null;
-            
+
             _waterChunks.Add(position, chunk);
 
             yield return null;
@@ -173,16 +170,17 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
         public IEnumerator SpawnFloraChunk(Vector3Int position, int[,,] blocks)
         {
-            if (_floraChunks.ContainsKey(position)) yield return null;
+            if (_floraChunks.ContainsKey(position))
+                yield break;
             Chunk chunk = new Chunk()
             {
                 Position = position,
                 Blocks = blocks,
                 State = ChunkState.Generated
             };
-            
+
             yield return null;
-            
+
             _floraChunks.Add(position, chunk);
 
             yield return null;
@@ -217,7 +215,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
                         if (!NetworkManager.Instance.ChunksToGet.Contains(chunkPos))
                             NetworkManager.Instance.ChunksToGet.Enqueue(chunkPos);
-                        
+
                         yield return null;
                     }
                 }
@@ -260,6 +258,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
                     meshingQueue.Enqueue(mesh);
                 }
             }
+
             yield return null;
         }
 
@@ -350,11 +349,12 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
                 var prevBlock = chunk.Renderer.SpawnBlock(blockChunkPosition, newBlockType);
                 if (prevBlock != 0)
                 {
-                    DropItem(blockWorldPosition,ResourceLoader.Instance.GetItem(ResourceLoader.Instance.GetBlock(prevBlock).DropItem), 1);
+                    DropItem(blockWorldPosition,
+                        ResourceLoader.Instance.GetItem(ResourceLoader.Instance.GetBlock(prevBlock).DropItem), 1);
                 }
             }
         }
-        
+
         public void UpdateFloraBlock(Vector3Int position, int newBlockType)
         {
             var blockWorldPosition = Vector3Int.FloorToInt(position);
@@ -366,7 +366,8 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
                 var prevBlock = chunk.Renderer.SpawnBlock(blockChunkPosition, newBlockType);
                 if (prevBlock != 0)
                 {
-                    DropItem(blockWorldPosition,ResourceLoader.Instance.GetItem(ResourceLoader.Instance.GetBlock(prevBlock).DropItem), 1);
+                    DropItem(blockWorldPosition,
+                        ResourceLoader.Instance.GetItem(ResourceLoader.Instance.GetBlock(prevBlock).DropItem), 1);
                 }
             }
         }

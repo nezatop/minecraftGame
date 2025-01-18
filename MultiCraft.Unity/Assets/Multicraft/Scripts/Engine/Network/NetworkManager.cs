@@ -52,6 +52,7 @@ namespace MultiCraft.Scripts.Engine.Network
         public ConcurrentQueue<Vector3Int> ChunksToRender;
         public ConcurrentQueue<Vector3Int> ChunksToGet;
         public HashSet<Vector3Int> RequestedChunks;
+        public HashSet<Vector3Int> SpawnedChunks;
         private int _requestedChunks = 0;
 
         public bool canSpawnPlayer;
@@ -74,6 +75,7 @@ namespace MultiCraft.Scripts.Engine.Network
             ChunksToRender = new ConcurrentQueue<Vector3Int>();
             ChunksToGet = new ConcurrentQueue<Vector3Int>();
             RequestedChunks = new HashSet<Vector3Int>();
+            SpawnedChunks = new HashSet<Vector3Int>();
 
             _otherPlayers = new Dictionary<string, OtherNetPlayer>();
             _animals = new Dictionary<string, GameObject>();
@@ -143,18 +145,30 @@ namespace MultiCraft.Scripts.Engine.Network
                 }
             }
 
-            if (ChunksToGet.Count > 0) return;
-            if (_requestedChunks > 0) return;
-            if (NetworkWorld.Instance.ChunksLoaded < (NetworkWorld.Instance.settings.viewDistanceInChunks * 2 + 1) *
-                (NetworkWorld.Instance.settings.viewDistanceInChunks * 2 + 1))
-                return;
+            if (ChunksToGet.Count > 0 && !_player) return;
+            if (_requestedChunks > 0 && !_player) return;
 
             if (ChunksToRender.TryDequeue(out chunkPosition))
             {
-                StartCoroutine(NetworkWorld.Instance.RenderChunks(chunkPosition));
-                StartCoroutine(NetworkWorld.Instance.RenderWaterChunks(chunkPosition));
-                StartCoroutine(NetworkWorld.Instance.RenderFloraChunks(chunkPosition));
+                if (SpawnedChunks.Contains(chunkPosition + Vector3Int.left) &&
+                    SpawnedChunks.Contains(chunkPosition + Vector3Int.right) &&
+                    SpawnedChunks.Contains(chunkPosition + Vector3Int.forward) &&
+                    SpawnedChunks.Contains(chunkPosition + Vector3Int.back))
+                {
+                    StartCoroutine(NetworkWorld.Instance.RenderChunks(chunkPosition));
+                    StartCoroutine(NetworkWorld.Instance.RenderWaterChunks(chunkPosition));
+                    StartCoroutine(NetworkWorld.Instance.RenderFloraChunks(chunkPosition));
+                }
+                else
+                {
+                    ChunksToRender.Enqueue(chunkPosition);
+                }
             }
+
+            if (!_player)
+                if (NetworkWorld.Instance.ChunksLoaded < (NetworkWorld.Instance.settings.viewDistanceInChunks * 2 + 1) *
+                    (NetworkWorld.Instance.settings.viewDistanceInChunks * 2 + 1))
+                    return;
 
             if (!_player && canSpawnPlayer && ChunksToRender.Count <= 0)
             {
@@ -466,9 +480,10 @@ namespace MultiCraft.Scripts.Engine.Network
             yield return StartCoroutine(Blocks(floraBlocksJson, result => floraBlocks = result));
 
             // Запуск корутин для спавна чанков
-            StartCoroutine(NetworkWorld.Instance.SpawnChunk(chunkCoord, blocks));
-            StartCoroutine(NetworkWorld.Instance.SpawnWaterChunk(chunkCoord, waterBlocks));
-            StartCoroutine(NetworkWorld.Instance.SpawnFloraChunk(chunkCoord, floraBlocks));
+            yield return NetworkWorld.Instance.SpawnChunk(chunkCoord, blocks);
+            yield return NetworkWorld.Instance.SpawnWaterChunk(chunkCoord, waterBlocks);
+            yield return NetworkWorld.Instance.SpawnFloraChunk(chunkCoord, floraBlocks);
+            SpawnedChunks.Add(chunkCoord);
 
             if (_player)
                 _playerPosition = _player.transform.position;
