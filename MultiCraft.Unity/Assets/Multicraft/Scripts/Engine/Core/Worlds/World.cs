@@ -20,6 +20,7 @@ using MultiCraft.Scripts.Engine.UI;
 using MultiCraft.Scripts.Engine.Utils;
 using Unity.VisualScripting;
 using UnityEngine;
+using YG;
 using Random = UnityEngine.Random;
 
 namespace MultiCraft.Scripts.Engine.Core.Worlds
@@ -33,7 +34,7 @@ namespace MultiCraft.Scripts.Engine.Core.Worlds
         public VariableJoystick moveJoystick;
         public VariableJoystick cameraJoystick;
 
-        private bool isMobile => SystemInfo.deviceType != DeviceType.Desktop;
+        private bool isMobile => YG2.envir.isMobile;
 
         [Header("World")] public string worldName;
         public Texture2D worldIcon;

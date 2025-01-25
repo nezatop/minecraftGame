@@ -269,7 +269,7 @@ function updateBlock(position, blockType, socket) {
         const index = indexV3.x + indexV3.z * 16 + indexV3.y * 16 * 16;
         chunk.chunk[index] = blockType; // Обновляем блок в чанке
 
-        if (blockType === 15) {
+        if (blockType === 54) {
             addInventory(position); // Если блок определенный, добавляем в инвентарь
         }
 

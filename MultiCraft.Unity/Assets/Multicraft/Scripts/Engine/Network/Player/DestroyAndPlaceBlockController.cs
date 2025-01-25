@@ -8,6 +8,7 @@ using MultiCraft.Scripts.Engine.Core.Player;
 using MultiCraft.Scripts.Engine.Network.Worlds;
 using MultiCraft.Scripts.Engine.UI;
 using UnityEngine;
+using YG;
 
 namespace MultiCraft.Scripts.Engine.Network.Player
 {
@@ -95,6 +96,8 @@ namespace MultiCraft.Scripts.Engine.Network.Player
                 if (_isSurvival) _destroyBlock.SetActive(false);
             }
 
+            if(YG2.envir.isMobile)return;
+            
             if (Input.GetMouseButtonDown(1))
             {
                 if (TryOpenBlock()) return;
@@ -150,7 +153,14 @@ namespace MultiCraft.Scripts.Engine.Network.Player
             }
         }
 
-        private bool TryAttact()
+        public void StopBreaking()
+        {
+            _currentDamage = 0f;
+            _currentBlock = null;
+            if (_isSurvival) _destroyBlock.SetActive(false);
+        }
+
+        public bool TryAttact()
         {
             if (!Physics.Raycast(transform.position, transform.forward, out var hitInfo, 5f, mobLayer)) return false;
             GameObject hitObject = hitInfo.collider.gameObject;
@@ -184,7 +194,7 @@ namespace MultiCraft.Scripts.Engine.Network.Player
             return true;
         }
 
-        private void TryPlaceBlock()
+        public void TryPlaceBlock()
         {
             if (Time.time < _nextPlaceTime) return;
 
@@ -209,7 +219,7 @@ namespace MultiCraft.Scripts.Engine.Network.Player
             }
         }
 
-        private bool TryOpenBlock()
+        public bool TryOpenBlock()
         {
             if (!Physics.Raycast(transform.position, transform.forward, out var hitInfo, 5f, worldLayer)) return false;
 
@@ -226,7 +236,7 @@ namespace MultiCraft.Scripts.Engine.Network.Player
             return false;
         }
 
-        private void TryEatItem()
+        public void TryEatItem()
         {
             var selectedItem = _playerInventory.GetSelectedItem();
             if (selectedItem != null && selectedItem.Item != null && selectedItem.Item.Type == ItemType.Consumable)
@@ -237,7 +247,7 @@ namespace MultiCraft.Scripts.Engine.Network.Player
             }
         }
         
-        private void TryDestroyBlock()
+        public void TryDestroyBlock()
         {
             if (!Physics.Raycast(transform.position, transform.forward, out var hitInfo, 5f, worldLayer)) return;
             if (_isSurvival) _destroyBlock.SetActive(true);

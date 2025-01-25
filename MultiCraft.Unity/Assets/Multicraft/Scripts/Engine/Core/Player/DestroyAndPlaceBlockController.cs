@@ -9,6 +9,7 @@ using MultiCraft.Scripts.Engine.Core.Worlds;
 using MultiCraft.Scripts.Engine.UI;
 using MultiCraft.Scripts.Engine.Utils;
 using UnityEngine;
+using YG;
 
 namespace MultiCraft.Scripts.Engine.Core.Player
 {
@@ -19,7 +20,7 @@ namespace MultiCraft.Scripts.Engine.Core.Player
         public HandAnimationController handAnimationController; // Ссылка на контроллер анимации
 
         public HungerSystem HungerSystem;
-        
+
         public LayerMask worldLayer;
         public LayerMask mobLayer;
 
@@ -49,8 +50,8 @@ namespace MultiCraft.Scripts.Engine.Core.Player
         public float destroyDelayNonSurvival = 0.1f; // Задержка разрушения блоков в режиме без выживания
 
 
-        private bool isMobile => SystemInfo.deviceType != DeviceType.Desktop;
-        
+        private bool isMobile => YG2.envir.isMobile;
+
         public void Start()
         {
             if (_destroyBlock == null)
@@ -61,7 +62,13 @@ namespace MultiCraft.Scripts.Engine.Core.Player
             _destroyBlock.SetActive(false);
             _material = _destroyBlock.GetComponent<MeshRenderer>().material;
         }
-
+        
+        public void StopBreaking()
+        {
+            _currentDamage = 0f;
+            _currentBlock = null;
+            if (_isSurvival) _destroyBlock.SetActive(false);
+        }
         private void OnDisable()
         {
             if (_destroyBlock != null)
@@ -72,7 +79,7 @@ namespace MultiCraft.Scripts.Engine.Core.Player
 
         private void Update()
         {
-            if(isMobile) return;
+            if (isMobile) return;
             var selectedItem = _playerInventory.GetSelectedItem();
             if (selectedItem != null)
             {
@@ -98,11 +105,14 @@ namespace MultiCraft.Scripts.Engine.Core.Player
             {
                 if (_isSurvival) _destroyBlock.SetActive(false);
             }
-
+            
+            if(YG2.envir.isMobile)return;
+            
             if (Input.GetMouseButtonDown(1))
             {
                 if (TryOpenBlock()) return;
-            } 
+            }
+
             if (Input.GetMouseButtonDown(1))
             {
                 TryEatItem();
@@ -153,8 +163,8 @@ namespace MultiCraft.Scripts.Engine.Core.Player
             }
         }
 
-        
-        private void TryEatItem()
+
+        public void TryEatItem()
         {
             var selectedItem = _playerInventory.GetSelectedItem();
             if (selectedItem != null && selectedItem.Item != null && selectedItem.Item.Type == ItemType.Consumable)
@@ -164,8 +174,8 @@ namespace MultiCraft.Scripts.Engine.Core.Player
                 _playerInventory.RemoveSelectedItem();
             }
         }
-        
-        private bool TryAttact()
+
+        public bool TryAttact()
         {
             if (!Physics.Raycast(transform.position, transform.forward, out var hitInfo, 5f, mobLayer)) return false;
             GameObject hitObject = hitInfo.collider.gameObject;
@@ -184,7 +194,7 @@ namespace MultiCraft.Scripts.Engine.Core.Player
             return true;
         }
 
-        private void TryPlaceBlock()
+        public void TryPlaceBlock()
         {
             if (Time.time < _nextPlaceTime) return;
 
@@ -209,7 +219,7 @@ namespace MultiCraft.Scripts.Engine.Core.Player
             }
         }
 
-        private bool TryOpenBlock()
+        public bool TryOpenBlock()
         {
             if (!Physics.Raycast(transform.position, transform.forward, out var hitInfo, 5f, worldLayer)) return false;
 
@@ -218,16 +228,16 @@ namespace MultiCraft.Scripts.Engine.Core.Player
             var block = World.Instance.GetBlockAtPosition(blockPosition);
             if (block.HaveInventory)
             {
-                UiManager.Instance.OpenCloseChest(World.Instance.GetInventory(blockPosition),
-                    Vector3Int.FloorToInt(blockPosition));
-                GetComponentInParent<InteractController>().DisableScripts();
+                if (UiManager.Instance.OpenCloseChest(World.Instance.GetInventory(blockPosition),
+                        Vector3Int.FloorToInt(blockPosition)))
+                    GetComponentInParent<InteractController>().DisableScripts();
                 return true;
             }
 
             return false;
         }
 
-        private void TryDestroyBlock()
+        public void TryDestroyBlock()
         {
             if (!Physics.Raycast(transform.position, transform.forward, out var hitInfo, 5f, worldLayer)) return;
             if (_isSurvival) _destroyBlock.SetActive(true);
@@ -238,7 +248,7 @@ namespace MultiCraft.Scripts.Engine.Core.Player
                 _currentDamage = 0f;
                 _targetBlockPosition = blockPosition;
                 _currentBlock = World.Instance.GetBlockAtPosition(blockPosition);
-                if(_currentBlock == null)
+                if (_currentBlock == null)
                     return;
             }
 

@@ -94,7 +94,8 @@ namespace MultiCraft.Scripts.Engine.Core.Inventories
             for (int i = 0; i < HotBarSlots.GetLength(1); i++)
             {
                 var slot = Instantiate(slotPref, hotBarSlotsGrid, false);
-                HotBarSlots[0, i] = slot.AddComponent<Slot>();
+                HotBarSlots[0, i] = slot.AddComponent<HotbarSlot>();
+                HotBarSlots[0, i].slotId = i;
             }
 
             for (int i = 0; i < AdditionalSlots.GetLength(0); i++)
@@ -112,9 +113,11 @@ namespace MultiCraft.Scripts.Engine.Core.Inventories
             for (int i = 0; i < 9; i++)
             {
                 HotBarSlots[0, i].SetDefaultColor();
+                HotBarSlots[0, i].Selected = false;
             }
 
             HotBarSlots[0, hotBarSelectedSlot].SetHighLight();
+            HotBarSlots[0, hotBarSelectedSlot].Selected = true;
         }
     }
 }

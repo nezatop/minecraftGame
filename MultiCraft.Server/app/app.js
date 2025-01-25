@@ -1,41 +1,57 @@
-import {WebSocketServer} from 'ws'; // Импортируем WebSocketServer
-
+import { WebSocketServer } from 'ws'; // Импортируем WebSocketServer
 import express from 'express';
 import https from 'https';
 import http from 'http';
 import cors from 'cors';
 
-import {loadPlayerData, savePlayerData, playerData} from './utils/storage.js';
-import {handleClientMessage, broadcast, SendEntities} from './routes/player.js';
-import {PORT} from './config.js';
-import {clients} from './utils/chunk.js';
+import { loadPlayerData, savePlayerData, playerData } from './utils/storage.js';
+import { handleClientMessage, broadcast, SendEntities } from './routes/player.js';
+import { PORT } from './config.js';
+import { clients } from './utils/chunk.js';
 import fs from "fs";
 import path from "path";
 
-import {fileURLToPath} from 'url';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const updateInterval = 10000 / 200;
 
-const key = fs.readFileSync('/etc/letsencrypt/live/bloxter.fun/privkey.pem');
-const cert = fs.readFileSync('/etc/letsencrypt/live/bloxter.fun/cert.pem');
+// Путь к сертификатам
+const keyPath = '/etc/letsencrypt/live/bloxter.fun/privkey.pem';
+const certPath = '/etc/letsencrypt/live/bloxter.fun/cert.pem';
 
 const app = express();
-const server = https.createServer(
-    {
-        key,
-        cert,
-        passphrase: 'test'
-    }, app);
-
 app.use(cors());
 
-const wss = new WebSocketServer({server}); // Используем WebSocketServer вместо WebSocket.Server
+// Проверяем наличие сертификатов
+let server;
+if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+    console.log('[SERVER] HTTPS mode enabled');
+    const key = fs.readFileSync(keyPath);
+    const cert = fs.readFileSync(certPath);
 
+    server = https.createServer(
+        {
+            key,
+            cert,
+            passphrase: 'test', // Убедитесь, что passphrase соответствует настройкам сертификата
+        },
+        app
+    );
+} else {
+    console.log('[SERVER] HTTPS certificates not found, starting HTTP server');
+    server = http.createServer(app);
+}
+
+// WebSocket сервер
+const wss = new WebSocketServer({ server });
+
+// Интервальный вызов функции SendEntities
 setInterval(SendEntities, updateInterval);
 
+// Обработка подключения WebSocket
 wss.on('connection', (socket) => {
     socket.on('message', (message) => {
         try {
@@ -56,11 +72,12 @@ wss.on('connection', (socket) => {
                 playerData.delete(clientId);
             }
         }
-        broadcast(JSON.stringify({type: 'player_disconnected', player_id: clientId}));
+        broadcast(JSON.stringify({ type: 'player_disconnected', player_id: clientId }));
         clients.delete(socket);
     });
 });
 
+// Запуск сервера
 server.listen(PORT, () => {
-    console.log(`[SERVER] Start on port ${PORT}`);
+    console.log(`[SERVER] Started on port ${PORT}`);
 });

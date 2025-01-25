@@ -1,15 +1,15 @@
 [
   {
-    "login": "4d202aeb-698c-4ffb-a4c0-f2352f8cbb92",
-    "password": "786ea92a-4ea3-4518-b66e-6474c9f18ad6",
+    "login": "Player currente",
+    "password": "bc7a2956-9aac-492a-8ac3-634b16e7f7a9",
     "position": {
-      "x": 2,
-      "y": 64,
-      "z": 2
+      "x": 10,
+      "y": 71.9098434,
+      "z": 10
     },
     "rotation": {
       "x": 0,
-      "y": 0,
+      "y": 33.1523895,
       "z": 0
     },
     "inventory": [

@@ -1305,8 +1305,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   settings:
-    viewDistanceInChunks: 7
-    loadDistance: 8
+    viewDistanceInChunks: 2
+    loadDistance: 3
   moveJoystick: {fileID: 1943192970}
   cameraJoystick: {fileID: 179221261}
   worldName: 

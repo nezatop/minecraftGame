@@ -18,6 +18,10 @@ namespace MultiCraft.Scripts.Engine.Core.Inventories
         private Color HotBarSelectedColor = new Color32(255, 255, 255, 255);
 
         public ItemInSlot Item;
+        
+        public int slotId;
+
+        public bool Selected = false;
 
         public bool hasItem => Item != null;
 
@@ -144,7 +148,11 @@ namespace MultiCraft.Scripts.Engine.Core.Inventories
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            image.color = defaultColor;
+            if(!Selected)
+                image.color = defaultColor;
+            else
+                image.color = HotBarSelectedColor;
+            
         }
 
         public void SetHighLight()

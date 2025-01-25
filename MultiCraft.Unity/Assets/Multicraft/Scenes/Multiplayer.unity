@@ -548,6 +548,7 @@ Transform:
   - {fileID: 1645531766}
   - {fileID: 966262256}
   - {fileID: 2064897790}
+  - {fileID: 1821539124}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &855794571
@@ -635,7 +636,7 @@ MonoBehaviour:
   playerPrefab: {fileID: 3874808127795487834, guid: e5c5eeef3fc64e04c92c8955924d35a2, type: 3}
   otherPlayerPrefab: {fileID: 7056010270576457223, guid: 74c49b3adc43ad64da94b0cfafe07e9a, type: 3}
   animalPrefab: {fileID: 7618816118743565708, guid: f5c0099c91ee22c4e8203f5af21a7554, type: 3}
-  serverAddress: wss://bloxter.fun:8080/
+  serverAddress: wss://bloxter.fun:8080
   playerName: 
   canSpawnPlayer: 0
   moveJoystick: {fileID: 1516936395}
@@ -937,6 +938,58 @@ MonoBehaviour:
     Object: {fileID: 0}
   - Language: English
     Text: Respawn
+    Object: {fileID: 0}
+--- !u!1 &1821539123
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1821539124}
+  - component: {fileID: 1821539125}
+  m_Layer: 0
+  m_Name: Return
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1821539124
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1821539123}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 757116136}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1821539125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1821539123}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb15fa0e7301ff849bf4d6dcede7c12b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  data: 0
+  entries:
+  - Language: Russian
+    Text: "\u0412\u0435\u0440\u043D\u0443\u0442\u044C\u0441\u044F \u0432 \u0438\u0433\u0440\u0443"
+    Object: {fileID: 0}
+  - Language: English
+    Text: "\r\u0421ontinue playing"
     Object: {fileID: 0}
 --- !u!1001 &1860614275
 PrefabInstance:

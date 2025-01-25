@@ -16,6 +16,7 @@ using MultiCraft.Scripts.Engine.Utils;
 using MultiCraft.Scripts.UI.Authorize;
 using UnityEngine.SceneManagement;
 using UnityWebSocket;
+using YG;
 using InteractController = MultiCraft.Scripts.Engine.Network.Player.InteractController;
 
 namespace MultiCraft.Scripts.Engine.Network
@@ -60,7 +61,7 @@ namespace MultiCraft.Scripts.Engine.Network
         public VariableJoystick moveJoystick;
         public VariableJoystick cameraJoystick;
 
-        private static bool IsMobile => SystemInfo.deviceType == DeviceType.Handheld;
+        private static bool IsMobile => YG2.envir.isMobile;
 
         private Vector3 _startPosition;
 
@@ -79,7 +80,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
             _otherPlayers = new Dictionary<string, OtherNetPlayer>();
             _animals = new Dictionary<string, GameObject>();
-
+/*
             if (PlayerPrefs.HasKey("UserData"))
             {
                 string jsonData = PlayerPrefs.GetString("UserData");
@@ -92,6 +93,18 @@ namespace MultiCraft.Scripts.Engine.Network
                 playerName = Guid.NewGuid().ToString();
                 _playerPassword = Guid.NewGuid().ToString();
             }
+*/
+
+            if (YG2.player.auth == false)
+            {
+                playerName = Guid.NewGuid().ToString();
+            }
+            else
+            {
+                playerName = YG2.player.name;
+            }
+
+            _playerPassword = Guid.NewGuid().ToString();
 
             _webSocket = new WebSocket(serverAddress);
 
@@ -178,9 +191,17 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void OnDestroy()
         {
-            _playerController.health.OnDeath -= OpenDeadMenu;
+            if(_playerController)
+                _playerController.health.OnDeath -= OpenDeadMenu;
         }
 
+        public IEnumerator DestroyChunk(Vector3Int chunkPosition)
+        {
+            RequestedChunks.Remove(chunkPosition);
+            SpawnedChunks.Remove(chunkPosition);
+            yield return null;
+        }
+        
         #region HandleServerMessage
 
         private void HandleServerMessage(string data)

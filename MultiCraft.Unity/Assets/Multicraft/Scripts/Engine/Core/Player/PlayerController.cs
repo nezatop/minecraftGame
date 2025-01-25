@@ -3,6 +3,7 @@ using MultiCraft.Scripts.Engine.Core.Entities;
 using MultiCraft.Scripts.Engine.Core.HealthSystem;
 using Multicraft.Scripts.Engine.Core.Hunger;
 using MultiCraft.Scripts.Engine.Core.Inventories;
+using MultiCraft.Scripts.Engine.Core.Items;
 using MultiCraft.Scripts.Engine.Core.MeshBuilders;
 using MultiCraft.Scripts.Engine.Utils;
 using Unity.VisualScripting;
@@ -35,7 +36,7 @@ namespace MultiCraft.Scripts.Engine.Core.Player
         public DroppedItem droppedItemPrefab;
         public float dropForce = 5f;
 
-        private Inventory _inventory;
+        public Inventory inventory;
         private float _fallStartY;
         private bool _isFalling;
         public Health health;
@@ -55,12 +56,23 @@ namespace MultiCraft.Scripts.Engine.Core.Player
 
         public CameraController cameraController;
         
+        private DestroyAndPlaceBlockController _destroyAndPlaceBlockController;
+        private Network.Player.DestroyAndPlaceBlockController _destroyAndPlaceBlockControllerNetwork;
+        
+        private InteractController _interactController;
+        private Network.Player.InteractController _interactControllerNetwork;
+        
         public float horizontalInput;
         public float verticalInput;
         private void Start()
         {
+            _destroyAndPlaceBlockController = cameraController.gameObject.GetComponent<DestroyAndPlaceBlockController>();
+            _destroyAndPlaceBlockControllerNetwork = cameraController.gameObject.GetComponent<Network.Player.DestroyAndPlaceBlockController>();
+           
+            _interactController = gameObject.GetComponent<InteractController>();
+            _interactControllerNetwork = gameObject.GetComponent<Network.Player.InteractController>();
             
-            _inventory = GetComponent<Inventory>();
+            inventory = GetComponent<Inventory>();
             health = GetComponent<Health>();
             if (health == null)
             {
@@ -70,21 +82,78 @@ namespace MultiCraft.Scripts.Engine.Core.Player
             controller = GetComponent<CharacterController>();
         }
 
-        private void OnEnable()
-        {
-            if(!isMobile)
-            {
-                Cursor.lockState = CursorLockMode.Confined;
-                Cursor.visible = true;
-            }
-        }
-
         private void Update()
         {
             HandleHeal();
             HandleMovement();
             HandleItemInteraction();
             HandleAnimation();
+        }
+
+        public void RightClickHandle()
+        {
+            if (_destroyAndPlaceBlockController != null)
+            {
+                _destroyAndPlaceBlockController.TryEatItem();
+                if(_destroyAndPlaceBlockController.TryOpenBlock())return;
+                _destroyAndPlaceBlockController.TryPlaceBlock();
+            }
+            else
+            {
+                _destroyAndPlaceBlockControllerNetwork.TryEatItem();
+                if(_destroyAndPlaceBlockControllerNetwork.TryOpenBlock())return;
+                _destroyAndPlaceBlockControllerNetwork.TryPlaceBlock();
+            }
+        }
+
+        public void StopBreaking()
+        {
+            if (_destroyAndPlaceBlockController != null)
+            {
+                _destroyAndPlaceBlockController.StopBreaking();
+            }
+            else
+            {
+                _destroyAndPlaceBlockControllerNetwork.StopBreaking();
+            }
+        }
+        
+        public void LeftClickHandle()
+        {
+            if (_destroyAndPlaceBlockController != null)
+            {
+                if(_destroyAndPlaceBlockController.TryAttact())return;
+                _destroyAndPlaceBlockController.TryDestroyBlock();
+            }
+            else
+            {
+                if(_destroyAndPlaceBlockControllerNetwork.TryAttact())return;
+                _destroyAndPlaceBlockControllerNetwork.TryDestroyBlock();
+            }
+        }
+
+        public void Enable()
+        {
+            if (_interactController != null)
+            {
+                _interactController.EnableScripts();
+            }
+            else
+            {
+                _interactControllerNetwork.EnableScripts();
+            }
+        }
+
+        public void Disable()
+        {
+            if (_interactController != null)
+            {
+                _interactController.DisableScripts();
+            }
+            else
+            {
+                _interactControllerNetwork.DisableScripts();
+            }
         }
         
         private void HandleHeal()
@@ -202,14 +271,25 @@ namespace MultiCraft.Scripts.Engine.Core.Player
 
         private void HandleItemInteraction()
         {
-            float scroll = Input.GetAxis("Mouse ScrollWheel");
+            Item handItem;
+            if (!isMobile)
+            {
+                float scroll = Input.GetAxis("Mouse ScrollWheel");
 
-            if (scroll < 0f && _currentValue < MaxValue)
-                _currentValue++;
-            else if (scroll > 0f && _currentValue > MinValue)
-                _currentValue--;
+                if (scroll < 0f && _currentValue < MaxValue)
+                    _currentValue++;
+                else if (scroll > 0f && _currentValue > MinValue)
+                    _currentValue--;
 
-            var handItem = _inventory.UpdateHotBarSelectedSlot(_currentValue);
+                handItem = inventory.UpdateHotBarSelectedSlot(_currentValue);
+            }
+            else
+            {
+                var itemInSlot = inventory.GetSelectedItem();
+                if(itemInSlot == null) return;
+                handItem = itemInSlot.Item;
+            }
+
             if (handItem != null)
             {
                 if (handItem.BlockType != null)
@@ -234,7 +314,7 @@ namespace MultiCraft.Scripts.Engine.Core.Player
 
             if (Input.GetKeyDown(KeyCode.Q))
             {
-                var item = _inventory.RemoveSelectedItem().Item;
+                var item = inventory.RemoveSelectedItem().Item;
                 var camera = transform.GetChild(0);
                 var droppedItem = Instantiate(droppedItemPrefab, camera.position + Vector3.down * 0.2f,
                     Quaternion.identity);

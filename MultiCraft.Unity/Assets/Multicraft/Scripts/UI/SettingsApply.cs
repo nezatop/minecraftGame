@@ -100,22 +100,16 @@ namespace MultiCraft.Scripts.UI
         
         private void SetMixerVolume(string parameter, float sliderValue)
         {
-            // Преобразование значения слайдера (0.0 - 1.0) в децибелы (-80 дБ до 0 дБ)
-            float dB = Mathf.Log10(Mathf.Max(sliderValue, 0.0001f)) * 20;
+            var dB = Mathf.Log10(Mathf.Max(sliderValue, 0.0001f)) * 20;
             audioMixer.SetFloat(parameter, dB);
         }
 
         private float GetMixerVolume(string parameter)
         {
-            if (audioMixer.GetFloat(parameter, out float value))
-            {
-                // Преобразование значения из децибел обратно в линейное (0.0 - 1.0)
-                return Mathf.Pow(10, value / 20);
-            }
-            return 1.0f; // Если параметр не найден, вернуть громкость по умолчанию
+            return audioMixer.GetFloat(parameter, out var value) ? Mathf.Pow(10, value / 20) : 0.7f;
         }
 
-        private void OnDestroy()
+        private void OnDisable()
         {
             if (masterVolumeSlider != null)
                 masterVolumeSlider.onValueChanged.RemoveListener(SetMasterVolume);
