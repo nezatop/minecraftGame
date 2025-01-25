@@ -130,6 +130,8 @@ function handleSetInventory(position, inventory, socket) {
 }
 
 function handleConnect(data, socket) {
+    console.log(`[SERVER] ${data.login} connected on server`);
+
     const {login, password} = data;
 
     if (playerData.has(login)) {
