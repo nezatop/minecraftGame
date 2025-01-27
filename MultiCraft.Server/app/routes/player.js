@@ -1,18 +1,18 @@
-import {playerData} from '../utils/storage.js';
+import { playerData } from '../utils/storage.js';
 import {
-    clients,
-    createChunk,
-    createFloraChunk,
-    createWaterChunk,
-    entities,
-    getRandomSurfacePosition
+    clients
+    , createChunk
+    , createFloraChunk
+    , createWaterChunk
+    , entities
+    , getRandomSurfacePosition
 } from '../utils/chunk.js';
-import {PlayerData} from "../models/player.js";
-import {addInventory, createInventory, getInventory, setInventory} from "../utils/inventory.js";
+import { PlayerData } from "../models/player.js";
+import { addInventory, createInventory, getInventory, setInventory } from "../utils/inventory.js";
 import fs from "fs";
 import path from "path";
 import msgpack from '@msgpack/msgpack';
-import {WebSocketServer} from 'ws'; // Импортируем WebSocketServer
+import { WebSocketServer } from 'ws'; // Импортируем WebSocketServer
 
 
 const __dirname = "./"
@@ -20,10 +20,13 @@ const __dirname = "./"
 const chunkStorageDir = path.join(__dirname, 'chunks');
 
 if (!fs.existsSync(chunkStorageDir)) {
-    fs.mkdirSync(chunkStorageDir, {recursive: true});
+    fs.mkdirSync(chunkStorageDir, { recursive: true });
 }
 
 export function handleClientMessage(data, socket) {
+
+    console.log(`[SERVER] Receive message ${data.type} from ${socket.id}.`);
+
     switch (data.type) {
         case 'connect':
             handleConnect(data, socket);
@@ -57,6 +60,7 @@ export function handleClientMessage(data, socket) {
             break;
         case 'disconnect':
             handleSetInventory(data.item, socket);
+            handleDisconnect(data, socket);
             break;
         case 'chat':
             handleChat(data.player, data.chat_massage, socket);
@@ -71,13 +75,19 @@ export function handleClientMessage(data, socket) {
     }
 }
 
+function handleDisconnect(data, socket) {
+    broadcast(JSON.stringify({
+        type: 'player_disconnected'
+        , player_id: data.player
+    }));
+}
+
 function handleDropInventory(data, socket) {
-    broadcast(JSON.stringify(
-        {
-            type: 'drop_inventory',
-            position: data.position,
-            inventory: data.inventory,
-        }));
+    broadcast(JSON.stringify({
+        type: 'drop_inventory'
+        , position: data.position
+        , inventory: data.inventory
+    }));
 }
 
 function handleAttack(data, socket) {
@@ -88,30 +98,29 @@ function handleAttack(data, socket) {
             foundSocket = socket;
         }
     });
-    foundSocket.send(JSON.stringify(
-        {
-            type: 'damage',
-            damage: data.damage
-        }
-    ));
+    sendMessage(foundSocket, {
+        type: 'damage'
+        , damage: data.damage
+    })
 }
 
 function handleChat(player, chat_massage, socket) {
-    broadcast(JSON.stringify({type: 'chat', player_id: player, chat_massage: chat_massage}));
+    broadcast(JSON.stringify({ type: 'chat', player_id: player, chat_massage: chat_massage }));
 }
 
 function handleGetEntities(data, socket) {
-    socket.send(JSON.stringify({
-        type: 'entities', entities_list: entities
-    }));
+    sendMessage(socket, {
+        type: 'entities'
+        , entities_list: entities
+    })
 }
 
 export function SendEntities() {
     if (entities.size > 0) { // Проверяем, есть ли сущности
         const entitiesArray = Array.from(entities.values()); // Преобразуем Map в массив
         broadcast(JSON.stringify({
-            type: 'entities',
-            entities_list: entitiesArray
+            type: 'entities'
+            , entities_list: entitiesArray
         }));
     }
 }
@@ -121,7 +130,7 @@ function handleGetInventory(position, socket) {
     const clientId = clients.get(socket);
     if (clientId) {
         const inventory = getInventory(position);
-        socket.send(JSON.stringify({type: 'inventory', position: position, inventory: inventory}));
+        sendMessage(socket, { type: 'inventory', position: position, inventory: inventory })
     }
 }
 
@@ -132,67 +141,48 @@ function handleSetInventory(position, inventory, socket) {
 function handleConnect(data, socket) {
     console.log(`[SERVER] ${data.login} connected on server`);
 
-    const {login, password} = data;
+    const { login, password } = data;
 
     if (playerData.has(login)) {
         const playerInfo = playerData.get(login);
-        socket.send(JSON.stringify({
-            type: 'connected',
-            position: playerInfo.position,
-            rotation: playerInfo.rotation,
-            inventory: playerInfo.inventory
-        }));
+        sendMessage(socket, {
+            type: 'connected'
+            , position: playerInfo.position
+            , rotation: playerInfo.rotation
+            , inventory: playerInfo.inventory
+        });
     } else {
         const startPosition = getRandomSurfacePosition();
-        playerData.set(login, new PlayerData(login, password, startPosition, {x: 0, y: 0, z: 0}));
+        playerData.set(login, new PlayerData(login, password, startPosition, { x: 0, y: 0, z: 0 }));
 
         socket.send(JSON.stringify({
-            type: 'connected', position: startPosition, rotation: {x: 0, y: 0, z: 0}, inventory: createInventory(),
-        }));
+            type: 'connected'
+            , position: startPosition
+            , rotation: { x: 0, y: 0, z: 0 }
+            , inventory: createInventory()
+            }));
     }
 
     clients.set(socket, login);
-    broadcast(JSON.stringify({type: 'player_connected', player_id: login, position: playerData.get(login).position}));
+    broadcast(JSON.stringify({ type: 'player_connected', player_id: login, position: playerData.get(login).position }));
 }
 
 function handlePlayers(socket) {
     const playersArray = Array.from(playerData.values()).map(data => ({
-        player_id: data.login, position: data.position
+        player_id: data.login
+        , position: data.position
     }));
 
-    socket.send(JSON.stringify({
-        type: 'players_list', players: playersArray
-    }));
+    sendMessage(socket, {
+        type: 'players_list'
+        , players: playersArray
+    })
 }
-
-/*
-function saveChunkToFile(chunkKey, chunk, waterChunk, floraChunk) {
-    const filePath = path.join(chunkStorageDir, `${chunkKey}.json`);
-
-    const chunkData = {
-        chunk,
-        waterChunk,
-        floraChunk
-    };
-
-    fs.writeFileSync(filePath, JSON.stringify(chunkData), 'utf8');
-}
-
-function loadChunkFromFile(chunkKey) {
-    const filePath = path.join(chunkStorageDir, `${chunkKey}.json`);
-
-    if (fs.existsSync(filePath)) {
-        const data = fs.readFileSync(filePath, 'utf8');
-        return JSON.parse(data);
-    }
-    return null;
-}
-*/
 
 function saveChunkToFile(chunkKey, chunk, waterChunk, floraChunk) {
     const filePath = path.join(chunkStorageDir, `${chunkKey}.mp`);
 
-    const chunkData = {chunk, waterChunk, floraChunk};
+    const chunkData = { chunk, waterChunk, floraChunk };
     const packedData = msgpack.encode(chunkData);
 
     fs.writeFileSync(filePath, packedData);
@@ -227,13 +217,13 @@ function handleGetChunk(position, socket) {
         saveChunkToFile(chunkKey, chunk, waterChunk, floraChunk);
     }
 
-    socket.send(JSON.stringify({
-        type: 'chunk_data',
-        position: position,
-        blocks: chunk,
-        waterChunk: waterChunk,
-        floraChunk: floraChunk,
-    }));
+    sendMessage(socket, {
+        type: 'chunk_data'
+        , position: position
+        , blocks: chunk
+        , waterChunk: waterChunk
+        , floraChunk: floraChunk
+        })
 }
 
 function handleMove(position, rotation, velocity, socket) {
@@ -243,11 +233,11 @@ function handleMove(position, rotation, velocity, socket) {
         playerData.get(clientId).rotation = rotation;
     }
     broadcast(JSON.stringify({
-        type: 'player_moved',
-        player_id: clientId,
-        position: position,
-        rotation: rotation,
-        velocity: velocity
+        type: 'player_moved'
+        , player_id: clientId
+        , position: position
+        , rotation: rotation
+        , velocity: velocity
     }));
 }
 
@@ -261,12 +251,15 @@ function updateBlock(position, blockType, socket) {
 
     if (chunk) {
         const chunkOrigin = {
-            x: chunkPosition.x * 16, y: chunkPosition.y * 16, z: chunkPosition.z * 16
+            x: chunkPosition.x * 16
+            , y: chunkPosition.y * 16
+            , z: chunkPosition.z * 16
         };
 
         const indexV3 = {
-            x: position.x - chunkOrigin.x, y: position.y - chunkOrigin.y, z: position.z - chunkOrigin.z,
-        };
+            x: position.x - chunkOrigin.x
+            , y: position.y - chunkOrigin.y
+            , z: position.z - chunkOrigin.z};
 
         const index = indexV3.x + indexV3.z * 16 + indexV3.y * 16 * 16;
         chunk.chunk[index] = blockType; // Обновляем блок в чанке
@@ -280,10 +273,10 @@ function updateBlock(position, blockType, socket) {
 
         // Отправляем обновление всем клиентам
         broadcast(JSON.stringify({
-            type: 'block_update',
-            chunk: "Block",
-            position: position,
-            block_type: blockType
+            type: 'block_update'
+            , chunk: "Block"
+            , position: position
+            , block_type: blockType
         }));
     }
 }
@@ -298,12 +291,15 @@ function updateFloraBlock(position, blockType, socket) {
 
     if (floraChunk) {
         const chunkOrigin = {
-            x: chunkPosition.x * 16, y: chunkPosition.y * 16, z: chunkPosition.z * 16
+            x: chunkPosition.x * 16
+            , y: chunkPosition.y * 16
+            , z: chunkPosition.z * 16
         };
 
         const indexV3 = {
-            x: position.x - chunkOrigin.x, y: position.y - chunkOrigin.y, z: position.z - chunkOrigin.z,
-        };
+            x: position.x - chunkOrigin.x
+            , y: position.y - chunkOrigin.y
+            , z: position.z - chunkOrigin.z};
 
         const index = indexV3.x + indexV3.z * 16 + indexV3.y * 16 * 16;
         floraChunk.floraChunk[index] = blockType; // Обновляем флору в чанке
@@ -313,10 +309,10 @@ function updateFloraBlock(position, blockType, socket) {
 
         // Отправляем обновление всем клиентам
         broadcast(JSON.stringify({
-            type: 'block_update',
-            chunk: "Flora",
-            position: position,
-            block_type: blockType
+            type: 'block_update'
+            , chunk: "Flora"
+            , position: position
+            , block_type: blockType
         }));
     }
 }
@@ -334,9 +330,9 @@ function handleDestroyBlock(position, socket) {
 
 function getChunkContainingBlock(blockWorldPosition) {
     let chunkPosition = {
-        x: Math.trunc(blockWorldPosition.x / 16),
-        y: Math.trunc(blockWorldPosition.y / 256),
-        z: Math.trunc(blockWorldPosition.z / 16)
+        x: Math.trunc(blockWorldPosition.x / 16)
+        , y: Math.trunc(blockWorldPosition.y / 256)
+        , z: Math.trunc(blockWorldPosition.z / 16)
     };
 
     if (blockWorldPosition.x < 0) {
@@ -353,7 +349,13 @@ function getChunkContainingBlock(blockWorldPosition) {
     return chunkPosition;
 }
 
+export function sendMessage(socket, data) {
+    console.log(`[SERVER] Send message ${data.type} to socket ${socket.id}.`);
+    socket.send(JSON.stringify(data));
+}
+
 export function broadcast(data) {
+    console.log(`[SERVER] Send message ${data.type} to all sockets.`);
     clients.forEach((_, client) => {
         if (client.readyState === WebSocket.OPEN) {
             client.send(data);

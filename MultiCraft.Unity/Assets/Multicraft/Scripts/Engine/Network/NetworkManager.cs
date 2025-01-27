@@ -23,12 +23,12 @@ namespace MultiCraft.Scripts.Engine.Network
 {
     public class NetworkManager : MonoBehaviour
     {
+        #region Parametrs
+
         private static readonly int VelocityX = Animator.StringToHash("VelocityX");
         private static readonly int VelocityY = Animator.StringToHash("VelocityY");
         private static readonly int VelocityZ = Animator.StringToHash("VelocityZ");
-
-        #region Parametrs
-
+        
         public static NetworkManager Instance { get; private set; }
 
         [Header("Debug Settings")] public bool enableLogging = true;
@@ -80,20 +80,6 @@ namespace MultiCraft.Scripts.Engine.Network
 
             _otherPlayers = new Dictionary<string, OtherNetPlayer>();
             _animals = new Dictionary<string, GameObject>();
-/*
-            if (PlayerPrefs.HasKey("UserData"))
-            {
-                string jsonData = PlayerPrefs.GetString("UserData");
-                var userData = JsonUtility.FromJson<UserData>(jsonData);
-                playerName = userData.username;
-                _playerPassword = userData.password;
-            }
-            else
-            {
-                playerName = Guid.NewGuid().ToString();
-                _playerPassword = Guid.NewGuid().ToString();
-            }
-*/
 
             if (YG2.player.auth == false)
             {
@@ -129,6 +115,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void OnClose(object sender, CloseEventArgs e)
         {
+            SendMessageToServer(new { type = "disconnect", player = playerName });
             SceneManager.LoadScene("MainMenu");
             LogDebug($"[Client] Connection closed. Reason: {e}");
         }
@@ -141,6 +128,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void OnApplicationQuit()
         {
+            SendMessageToServer(new { type = "disconnect", player = playerName });
             _webSocket?.CloseAsync();
         }
 
@@ -643,7 +631,7 @@ namespace MultiCraft.Scripts.Engine.Network
             UiManager.Instance.CloseDead();
             _playerController.GetComponent<InteractController>().EnableScripts();
             _player.transform.position = _startPosition;
-            _playerController.health.TakeDamage(-(int)_playerController.health.maxHealth);
+            _playerController.health.ResetHealth();
             _playerController.GetComponent<HungerSystem>().hunger =
                 _playerController.GetComponent<HungerSystem>().maxHunger;
         }

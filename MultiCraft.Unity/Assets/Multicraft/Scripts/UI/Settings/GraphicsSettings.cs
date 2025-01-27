@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
+using YG;
 
 namespace MultiCraft.Scripts.Settings.UI
 {
@@ -43,8 +44,11 @@ namespace MultiCraft.Scripts.Settings.UI
             }
             else
             {
-                SetRenderDistance(4);
-                renderDistanceSlider.value = 4;
+                var renderDistance = 4;
+                if (YG2.envir.isMobile)
+                    renderDistance = 2;
+                SetRenderDistance(renderDistance);
+                renderDistanceSlider.value = renderDistance;
             }
         }
         

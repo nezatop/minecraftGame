@@ -35,6 +35,11 @@ namespace MultiCraft.Scripts.Engine.Core.HealthSystem
             OnDamage?.Invoke((int)health);
         }
 
+        public void ResetHealth()
+        {
+            health = maxHealth;
+        }
+
         private IEnumerator ColorRes()
         {
             

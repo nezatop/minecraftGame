@@ -157,13 +157,11 @@ namespace MultiCraft.Scripts.Engine.Core.Worlds
             if (seed == 0)
                 seed = Random.Range(int.MinValue, int.MaxValue);
 
-            if (PlayerPrefs.HasKey("settings"))
+            if (PlayerPrefs.HasKey("RenderDistance"))
             {
-                var jsonData = PlayerPrefs.GetString("settings");
-                var data = JsonDocument.Parse(jsonData);
-                var renderDist = data.RootElement.GetProperty("renderDistance").GetInt32();
-                settings.viewDistanceInChunks = renderDist;
-                settings.loadDistance = renderDist + 1;
+                var renderDistance = PlayerPrefs.GetFloat("RenderDistance");
+                settings.viewDistanceInChunks = Mathf.FloorToInt(renderDistance);
+                settings.loadDistance = settings.viewDistanceInChunks + 1;
             }
 
             Chunks = new Dictionary<Vector3Int, Chunk>();
