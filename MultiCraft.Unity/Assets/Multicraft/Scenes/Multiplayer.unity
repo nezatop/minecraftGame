@@ -636,7 +636,7 @@ MonoBehaviour:
   playerPrefab: {fileID: 3874808127795487834, guid: e5c5eeef3fc64e04c92c8955924d35a2, type: 3}
   otherPlayerPrefab: {fileID: 7056010270576457223, guid: 74c49b3adc43ad64da94b0cfafe07e9a, type: 3}
   animalPrefab: {fileID: 7618816118743565708, guid: f5c0099c91ee22c4e8203f5af21a7554, type: 3}
-  serverAddress: wss://bloxter.fun:8080
+  serverAddress: ws://localhost:8080
   playerName: 
   canSpawnPlayer: 0
   moveJoystick: {fileID: 1516936395}

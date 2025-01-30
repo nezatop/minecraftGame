@@ -829,7 +829,7 @@ PlayerSettings:
   webGLCloseOnQuit: 0
   webWasm2023: 0
   scriptingDefineSymbols:
-    WebGL: PLUGIN_YG_2;TMP_YG2;Authorization_yg;InterstitialAdv_yg;Localization_yg;Payments_yg;RewardedAdv_yg;YandexGamesPlatform_yg;EnvirData_yg
+    WebGL: PLUGIN_YG_2;TMP_YG2;Authorization_yg;InterstitialAdv_yg;Localization_yg;Payments_yg;RewardedAdv_yg;YandexGamesPlatform_yg;EnvirData_yg;RU_YG2
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
