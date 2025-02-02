@@ -39,7 +39,7 @@ namespace MultiCraft.Scripts.Engine.Network
         private Dictionary<string, OtherNetPlayer> _otherPlayers;
         private Dictionary<string, GameObject> _animals;
 
-        public string serverAddress = "wss://ms-mult.onrender.com";
+        public string serverAddress = "ws://localhost:8080";
 
         private WebSocket _webSocket;
 
@@ -136,7 +136,6 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void Update()
         {
-            LogDebug($"{_requestedChunks}");
             if (ChunksToGet.TryDequeue(out Vector3Int chunkPosition))
             {
                 if (!RequestedChunks.Contains(chunkPosition))
@@ -615,6 +614,12 @@ namespace MultiCraft.Scripts.Engine.Network
                 otherPlayers.cameraTransform = _player.GetComponentInChildren<Camera>().transform;
             }
 
+            SendMessageToServer(new
+            {
+                type = "loaded",
+                login = playerName,
+            });
+            
             StartCoroutine(SendPlayerPositionRepeatedly());
         }
 

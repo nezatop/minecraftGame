@@ -31,6 +31,9 @@ export function handleClientMessage(data, socket) {
         case 'connect':
             handleConnect(data, socket);
             break;
+        case 'loaded':
+            handleLoaded(data, socket);
+            break;
         case 'drop_inventory':
             handleDropInventory(data, socket);
             break;
@@ -73,6 +76,11 @@ export function handleClientMessage(data, socket) {
             break;
         default:
     }
+}
+
+function handleLoaded(data, socket) {
+    const { login} = data;
+    broadcast(JSON.stringify({ type: 'player_connected', player_id: login, position: playerData.get(login).position }));
 }
 
 function handleDisconnect(data, socket) {
@@ -164,7 +172,7 @@ function handleConnect(data, socket) {
     }
 
     clients.set(socket, login);
-    broadcast(JSON.stringify({ type: 'player_connected', player_id: login, position: playerData.get(login).position }));
+    /*broadcast(JSON.stringify({ type: 'player_connected', player_id: login, position: playerData.get(login).position }));*/
 }
 
 function handlePlayers(socket) {

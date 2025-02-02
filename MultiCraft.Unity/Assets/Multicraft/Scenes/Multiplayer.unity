@@ -632,7 +632,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b973f741d3414223b0b387c21df230be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enableLogging: 1
+  enableLogging: 0
   playerPrefab: {fileID: 3874808127795487834, guid: e5c5eeef3fc64e04c92c8955924d35a2, type: 3}
   otherPlayerPrefab: {fileID: 7056010270576457223, guid: 74c49b3adc43ad64da94b0cfafe07e9a, type: 3}
   animalPrefab: {fileID: 7618816118743565708, guid: f5c0099c91ee22c4e8203f5af21a7554, type: 3}
