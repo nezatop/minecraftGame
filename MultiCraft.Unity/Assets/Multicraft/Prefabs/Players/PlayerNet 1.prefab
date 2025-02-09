@@ -628,6 +628,7 @@ MonoBehaviour:
   handRenderer: {fileID: 311714298413353384}
   droppedItemPrefab: {fileID: 7938290796487471727, guid: fca637bc470e974498b1b97fbaeda5bd, type: 3}
   dropForce: 5
+  inventory: {fileID: 0}
   health: {fileID: 5341370029845805918}
   hunger: {fileID: 3440537931468962920}
   animator: {fileID: 3668425676564365382}
@@ -664,6 +665,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5cb593b0c664beb8663cd303ae4a148, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  AddStartItems: 0
   HotBarSelectedSlot: 0
 --- !u!114 &3440537931468962920
 MonoBehaviour:
@@ -807,6 +809,7 @@ GameObject:
   - component: {fileID: 7880771307019021481}
   - component: {fileID: 424801017422289852}
   - component: {fileID: 3417842181074967864}
+  - component: {fileID: 2558447261355020742}
   m_Layer: 0
   m_Name: Camera
   m_TagString: Untagged
@@ -971,11 +974,24 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   destroyedBlockPrefab: {fileID: 4520813300798871087, guid: d3c56fbcd08fca64688aef796dcf2802, type: 3}
-  breakSpeed: 1
+  breakSpeed: 2
   miningMultiplier: 1
   placeDelay: 0.5
   _isSurvival: 0
   destroyDelayNonSurvival: 0.1
+--- !u!114 &2558447261355020742
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6697391632260853021}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 218df76a0b9946d98c8ac62782b576fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Shadows: 0
 --- !u!1 &8410494476123275667
 GameObject:
   m_ObjectHideFlags: 0

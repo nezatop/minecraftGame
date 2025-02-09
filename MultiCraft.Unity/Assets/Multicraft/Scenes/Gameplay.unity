@@ -719,6 +719,30 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2432970188606551871, guid: 269beaac244d7094fb7daca439a82bcb, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2432970188606551871, guid: 269beaac244d7094fb7daca439a82bcb, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2432970188606551871, guid: 269beaac244d7094fb7daca439a82bcb, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2432970188606551871, guid: 269beaac244d7094fb7daca439a82bcb, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2432970188606551871, guid: 269beaac244d7094fb7daca439a82bcb, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2432970188606551871, guid: 269beaac244d7094fb7daca439a82bcb, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2936566378721579092, guid: 269beaac244d7094fb7daca439a82bcb, type: 3}
       propertyPath: m_Name
       value: UIRoot
@@ -6521,6 +6545,7 @@ MonoBehaviour:
   Stars: {fileID: 1898012896}
   Sun: {fileID: 170076734}
   Moon: {fileID: 23395277}
+  DayNight: 0
 --- !u!4 &2031825309
 Transform:
   m_ObjectHideFlags: 0

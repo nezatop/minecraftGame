@@ -32,6 +32,11 @@ namespace MultiCraft.Scripts.UI
             SceneManager.LoadScene("Boot");
             SceneManager.LoadScene("Multiplayer");
         }
+        
+        public void OpenTelegram()
+        {
+            Application.OpenURL("https://t.me/bloxter_fun");
+        }
 
         public void OpenSettings()
         {

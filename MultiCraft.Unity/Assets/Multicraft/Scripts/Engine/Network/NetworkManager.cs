@@ -64,6 +64,9 @@ namespace MultiCraft.Scripts.Engine.Network
         private static bool IsMobile => YG2.envir.isMobile;
 
         private Vector3 _startPosition;
+        
+        private float targetTime = 0f;
+        private float smoothSpeed = 2f; 
 
         #endregion
 
@@ -117,7 +120,7 @@ namespace MultiCraft.Scripts.Engine.Network
         {
             SendMessageToServer(new { type = "disconnect", player = playerName });
             SceneManager.LoadScene("MainMenu");
-            LogDebug($"[Client] Connection closed. Reason: {e}");
+            LogDebug($"[Client] Connection closed. Reason: {e.Reason}");
         }
 
         private void OnOpen(object sender, OpenEventArgs e)
@@ -136,6 +139,11 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void Update()
         {
+            if (DayCycleManager.Instance != null)
+            {
+                DayCycleManager.Instance.TimeOfDay = Mathf.Lerp(DayCycleManager.Instance.TimeOfDay, targetTime, Time.deltaTime * smoothSpeed);
+            }
+            
             if (ChunksToGet.TryDequeue(out Vector3Int chunkPosition))
             {
                 if (!RequestedChunks.Contains(chunkPosition))
@@ -205,6 +213,10 @@ namespace MultiCraft.Scripts.Engine.Network
                         OnConnected(message.RootElement);
                         SendMessageToServer(new { type = "get_players" });
                         break;
+                    
+                    case "time":
+                        HandleTime(message.RootElement);
+                        break;
 
                     case "damage":
                         HandleDamage(message.RootElement);
@@ -270,6 +282,16 @@ namespace MultiCraft.Scripts.Engine.Network
 
         #region Handleplayers
 
+        public void DisconnectPlayer()
+        {
+            SendMessageToServer(new { type = "disconnect", player = playerName });
+        }
+        
+        private void HandleTime(JsonElement data)
+        {
+            targetTime = data.GetProperty("time").GetSingle(); // Получаем новое время
+        }
+        
         private void OnConnected(JsonElement data)
         {
             Vector3 position = JsonToVector3Safe(data, "position");

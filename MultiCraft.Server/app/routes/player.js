@@ -23,6 +23,21 @@ if (!fs.existsSync(chunkStorageDir)) {
     fs.mkdirSync(chunkStorageDir, { recursive: true });
 }
 
+const DayDuration = 300;
+let startTime = Date.now();
+
+function getTimeFraction() {
+    let elapsed = (Date.now() - startTime) / 1000;
+    return (elapsed % DayDuration) / DayDuration;
+}
+
+export function broadcastTime() {
+    broadcast(JSON.stringify({
+        type: 'time',
+        time: getTimeFraction(),
+    }));
+}
+
 export function handleClientMessage(data, socket) {
 
     console.log(`[SERVER] Receive message ${data.type} from ${socket.id}.`);

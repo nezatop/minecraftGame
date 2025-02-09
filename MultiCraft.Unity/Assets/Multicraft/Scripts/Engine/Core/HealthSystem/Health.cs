@@ -20,12 +20,12 @@ namespace MultiCraft.Scripts.Engine.Core.HealthSystem
 
         private void Awake()
         {
-            if (haveHunger && health > 0) gameObject.GetComponent<HungerSystem>().onHungerZero += TakeDamage;
+            if (haveHunger && health > 0) gameObject.GetComponent<HungerSystem>().onHungerZero += TakeHungerDamage;
         }
 
         private void OnDisable()
         {
-            if (haveHunger && health > 0) gameObject.GetComponent<HungerSystem>().onHungerZero -= TakeDamage;
+            if (haveHunger && health > 0) gameObject.GetComponent<HungerSystem>().onHungerZero -= TakeHungerDamage;
         }
         public void TakeDamage(int damage)
         {
@@ -49,9 +49,9 @@ namespace MultiCraft.Scripts.Engine.Core.HealthSystem
             material.color = Color.white;
         }
 
-        private void TakeDamage()
+        private void TakeHungerDamage()
         {
-            var damage = 0.001f * Time.deltaTime;
+            const int damage = 1;
             health = Mathf.Clamp((health - damage), 1f, maxHealth);
             if (health <= 0) OnDeath?.Invoke();
             OnDamage?.Invoke((int)health);

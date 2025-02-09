@@ -1,9 +1,11 @@
-﻿using UnityEngine;
+﻿using System.Xml;
+using MultiCraft.Scripts.Engine.Network;
+using UnityEngine;
 
 public class DayCycleManager : MonoBehaviour
 {
-    [Range(0, 1)]
-    public float TimeOfDay;
+    public static DayCycleManager Instance;
+    [Range(0, 1)] public float TimeOfDay;
     public float DayDuration = 30f;
 
     public AnimationCurve SunCurve;
@@ -21,15 +23,27 @@ public class DayCycleManager : MonoBehaviour
     private float sunIntensity;
     private float moonIntensity;
 
+    public bool DayNight;
+    private const string DayNightKey = "DayAndNightToggleState";
+
     private void Start()
     {
+        Instance = this;
         sunIntensity = Sun.intensity;
         moonIntensity = Moon.intensity;
+        LoadShadowToggleState();
+    }
+
+    private void LoadShadowToggleState()
+    {
+        DayNight = PlayerPrefs.GetInt(DayNightKey, 0) == 1;
     }
 
     private void Update()
     {
-        TimeOfDay += Time.deltaTime / DayDuration;
+        if(!NetworkManager.Instance)
+            if (DayNight)
+                TimeOfDay += Time.deltaTime / DayDuration;
         if (TimeOfDay >= 1) TimeOfDay -= 1;
 
         // Настройки освещения (skybox и основное солнце)

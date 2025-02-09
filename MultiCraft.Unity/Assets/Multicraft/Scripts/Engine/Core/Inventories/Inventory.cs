@@ -9,6 +9,8 @@ namespace MultiCraft.Scripts.Engine.Core.Inventories
 {
     public class Inventory : MonoBehaviour
     {
+        public bool AddStartItems = false;
+        
         public List<ItemInSlot> Slots;
         public int HotBarSelectedSlot = 0;
         private bool _init = false;
@@ -40,16 +42,18 @@ namespace MultiCraft.Scripts.Engine.Core.Inventories
 
             _init = true;
 
-            var index = 9;
-            foreach (var item in ResourceLoader.Instance.getItems.Values)
+            if(AddStartItems)
             {
-                if (index++ < 9 * 4 - 1)
+                var index = 9;
+                foreach (var item in ResourceLoader.Instance.getItems.Values)
                 {
-                    Slots[index].Item = item;
-                    Slots[index].Amount = 64;
+                    if (index++ < 9 * 4 - 1)
+                    {
+                        Slots[index].Item = item;
+                        Slots[index].Amount = 64;
+                    }
                 }
             }
-            
             UiManager.Instance.UpdateInventory(Slots);
         }
 

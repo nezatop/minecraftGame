@@ -13,26 +13,30 @@ namespace Multicraft.Scripts.Engine.Core.Hunger
 
         public Action<int> onHungerChanged;
         public Action onHungerZero;
-        
-        private void Update()
+
+        private void Awake()
         {
             StartCoroutine(HungerDecrease());
         }
 
-        public IEnumerator HungerDecrease()
+        private IEnumerator HungerDecrease()
         {
-            // Уменьшение голода со временем
-            hunger -= hungerDecreaseRate * Time.deltaTime;
-            hunger = Mathf.Clamp(hunger, 0, maxHunger);
-
-            // Проверка состояния голода
-            if (hunger <= 0)
+            while (true)
             {
-                onHungerZero?.Invoke();
+                // Уменьшение голода со временем
+                hunger -= hungerDecreaseRate;
+                hunger = Mathf.Clamp(hunger, 0, maxHunger);
+
+                // Проверка состояния голода
+                if (hunger <= 0)
+                {
+                    onHungerZero?.Invoke();
+                }
+
+                onHungerChanged?.Invoke((int)hunger);
+                yield return new WaitForSeconds(hungerDecreaseTime);
             }
-            
-            onHungerChanged?.Invoke((int)hunger);
-            yield return new WaitForSeconds(hungerDecreaseTime);
+            // ReSharper disable once IteratorNeverReturns
         }
 
         public void EatFood(int foodValue)

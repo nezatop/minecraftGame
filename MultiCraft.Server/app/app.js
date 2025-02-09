@@ -5,7 +5,7 @@ import http from 'http';
 import cors from 'cors';
 
 import { loadPlayerData, savePlayerData, playerData } from './utils/storage.js';
-import { handleClientMessage, broadcast, SendEntities } from './routes/player.js';
+import {handleClientMessage, broadcast, SendEntities, broadcastTime} from './routes/player.js';
 import { PORT } from './config.js';
 import { clients } from './utils/chunk.js';
 import fs from "fs";
@@ -50,7 +50,7 @@ const wss = new WebSocketServer({ server });
 
 // Интервальный вызов функции SendEntities
 setInterval(SendEntities, updateInterval);
-
+setInterval(broadcastTime, 50);
 // Обработка подключения WebSocket
 wss.on('connection', (socket) => {
     socket.on('message', (message) => {

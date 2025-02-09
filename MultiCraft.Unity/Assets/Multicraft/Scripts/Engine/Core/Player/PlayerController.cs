@@ -280,7 +280,26 @@ namespace MultiCraft.Scripts.Engine.Core.Player
                     _currentValue++;
                 else if (scroll > 0f && _currentValue > MinValue)
                     _currentValue--;
-
+                
+                if (Input.GetKeyDown(KeyCode.Alpha1))
+                    _currentValue = 0;
+                if (Input.GetKeyDown(KeyCode.Alpha2))
+                    _currentValue = 1;
+                if (Input.GetKeyDown(KeyCode.Alpha3))
+                    _currentValue = 2;
+                if (Input.GetKeyDown(KeyCode.Alpha4))
+                    _currentValue = 3;
+                if (Input.GetKeyDown(KeyCode.Alpha5))
+                    _currentValue = 4;
+                if (Input.GetKeyDown(KeyCode.Alpha6))
+                    _currentValue = 5;
+                if (Input.GetKeyDown(KeyCode.Alpha7))
+                    _currentValue = 6;
+                if (Input.GetKeyDown(KeyCode.Alpha8))
+                    _currentValue = 7;
+                if (Input.GetKeyDown(KeyCode.Alpha9))
+                    _currentValue = 8;
+                
                 handItem = inventory.UpdateHotBarSelectedSlot(_currentValue);
             }
             else
@@ -289,6 +308,8 @@ namespace MultiCraft.Scripts.Engine.Core.Player
                 if(itemInSlot == null) return;
                 handItem = itemInSlot.Item;
             }
+
+            
 
             if (handItem != null)
             {

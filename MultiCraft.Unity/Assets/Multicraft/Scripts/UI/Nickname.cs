@@ -23,7 +23,6 @@ namespace MultiCraft.Scripts.UI
 
         private void OnLogin()
         {
-            Debug.Log("OnLogin");
             nickname.text = PlayerPrefs.GetString("PlayerName");
         }
     }
