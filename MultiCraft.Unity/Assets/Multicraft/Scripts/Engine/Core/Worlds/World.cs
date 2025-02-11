@@ -190,6 +190,7 @@ namespace MultiCraft.Scripts.Engine.Core.Worlds
             var player = Instantiate(PlayerPrefab, new Vector3Int(0, 68, 0), Quaternion.identity);
             UiManager.Instance.PlayerController = player.GetComponent<PlayerController>();
             UiManager.Instance.Initialize();
+            player.GetComponent<InteractController>().OpenChat();
 
             _players.Add(player);
             _currentPlayersPosition = _players

@@ -97,5 +97,15 @@ namespace MultiCraft.Scripts.Engine.Core.Player
             else
                 EnableScripts();
         }
+
+        public void OpenChat()
+        {
+            if (_activeInventory) return;
+            _activeChat = !_activeChat;
+            if (UiManager.Instance.OpenCloseChat())
+                DisableScripts();
+            else
+                EnableScripts();
+        }
     }
 }

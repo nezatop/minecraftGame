@@ -44,7 +44,7 @@ namespace MultiCraft.Scripts.Settings.UI
             }
             else
             {
-                var renderDistance = 4;
+                var renderDistance =2;
                 if (YG2.envir.isMobile)
                     renderDistance = 2;
                 SetRenderDistance(renderDistance);

@@ -141,7 +141,9 @@ namespace MultiCraft.Scripts.Engine.Network
         {
             if (DayCycleManager.Instance != null)
             {
-                DayCycleManager.Instance.TimeOfDay = Mathf.Lerp(DayCycleManager.Instance.TimeOfDay, targetTime, Time.deltaTime * smoothSpeed);
+                if (DayCycleManager.Instance.TimeOfDay > targetTime)
+                    DayCycleManager.Instance.TimeOfDay -= 1;
+                if(DayCycleManager.Instance.DayNight)DayCycleManager.Instance.TimeOfDay = Mathf.Lerp(DayCycleManager.Instance.TimeOfDay, targetTime, Time.deltaTime * smoothSpeed);
             }
             
             if (ChunksToGet.TryDequeue(out Vector3Int chunkPosition))
@@ -438,7 +440,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void HandleGetEntities(JsonElement data)
         {
-            if (!_player || !canSpawnPlayer || ChunksToRender.Count > 0) return;
+            if (!_player || !canSpawnPlayer) return;
             if (data.TryGetProperty("entities_list", out JsonElement entitiesElement) &&
                 entitiesElement.ValueKind == JsonValueKind.Array)
             {
@@ -635,6 +637,8 @@ namespace MultiCraft.Scripts.Engine.Network
             {
                 otherPlayers.cameraTransform = _player.GetComponentInChildren<Camera>().transform;
             }
+            
+            _player.GetComponent<Network.Player.InteractController>().OpenChat();
 
             SendMessageToServer(new
             {

@@ -110,7 +110,25 @@ namespace MultiCraft.Scripts.Engine.Network.Player
             UiManager.Instance.OpenClosePause();
         }
         
-        private void OpenChat(InputAction.CallbackContext obj)
+        public void OpenChat(InputAction.CallbackContext obj)
+        {
+            if(_activeInventory) return;
+            _activeChat = !_activeChat;
+            foreach (var script in ScriptsToDisable)
+            {
+                script.enabled = !script.enabled;
+            }
+
+            mainCamera.GetComponent<CameraController>().enabled = !mainCamera.GetComponent<CameraController>().enabled;
+            mainCamera.GetComponent<DestroyAndPlaceBlockController>().enabled =
+                !mainCamera.GetComponent<DestroyAndPlaceBlockController>().enabled;
+            //mainCamera.GetComponent<HighLightController>().enabled =
+            //   !mainCamera.GetComponent<HighLightController>().enabled;
+
+            UiManager.Instance.OpenCloseChat();
+        }
+        
+        public void OpenChat()
         {
             if(_activeInventory) return;
             _activeChat = !_activeChat;

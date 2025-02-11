@@ -373,12 +373,12 @@ function getChunkContainingBlock(blockWorldPosition) {
 }
 
 export function sendMessage(socket, data) {
-    console.log(`[SERVER] Send message ${data.type} to socket ${socket.id}.`);
+    console.log(`[SERVER] Send message ${data.type} to socket.`);
     socket.send(JSON.stringify(data));
 }
 
 export function broadcast(data) {
-    console.log(`[SERVER] Send message ${data.type} to all sockets.`);
+    console.log(`[SERVER] Send message ${data} to all sockets.`);
     clients.forEach((_, client) => {
         if (client.readyState === WebSocket.OPEN) {
             client.send(data);

@@ -1,11 +1,12 @@
 import {WorldGenerator, Config} from './WorldGenerator.js';
+import fs from "fs";
 
 export const clients = new Map();
 export const chunkMap = new Map();
 export const waterChunkMap = new Map();
 export const floraChunkMap = new Map();
 
-export const entities = new Map();
+export let entities = new Map();
 
 const ANIMAL_TYPES = ['sheep', 'cow', 'pig'];
 const NUM_ANIMALS = 20;
@@ -48,6 +49,7 @@ export function createChunk(offsetX, offsetY, offsetZ) {
     const blocks = worldGenerator.generate(offsetX, offsetZ);
     if (Math.random() < 0.1) {
         generateAnimals(blocks, offsetX, offsetY, offsetZ);
+        saveAnimalsToFile("entities.json", entities)
     }
     return blocks;
 }
@@ -60,7 +62,7 @@ export function createFloraChunk(offsetX, offsetY, offsetZ) {
     return worldGenerator.generateFlora(offsetX, offsetZ);
 }
 
-function generateAnimals(blocks, offsetX, offsetY, offsetZ) {
+export function generateAnimals(blocks, offsetX, offsetY, offsetZ) {
     for (let i = 0; i < NUM_ANIMALS; i++) {
         if (Math.random() < 0.1) {
             const randomX = Math.floor(Math.random() * 16);
@@ -73,6 +75,35 @@ function generateAnimals(blocks, offsetX, offsetY, offsetZ) {
             entities.set(id, {id, type, position});
         }
     }
+}
+
+export function loadAnimalsFromFile(filename) {
+    if (!fs.existsSync(filename)) {
+        console.log(`File ${filename} does not exist.`);
+        return new Map();
+    }
+
+    // Читаем данные из файла
+    const data = fs.readFileSync(filename, 'utf-8');
+    const animalsArray = JSON.parse(data);
+
+    // Преобразуем массив обратно в Map
+    const entities = new Map();
+    animalsArray.forEach(animal => {
+        entities.set(animal.id, animal);
+    });
+
+    console.log(`Animals loaded from ${filename}`);
+    return entities;
+}
+
+export function saveAnimalsToFile(filename, entities) {
+    // Преобразуем Map в массив объектов для удобства сохранения
+    const animalsArray = Array.from(entities.values());
+
+    // Сохраняем данные в файл
+    fs.writeFileSync(filename, JSON.stringify(animalsArray, null, 2), 'utf-8');
+    console.log(`Animals saved to ${filename}`);
 }
 
 function findSurfaceHeight(chunk, x, z) {

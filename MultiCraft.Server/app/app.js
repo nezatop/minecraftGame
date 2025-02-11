@@ -7,7 +7,7 @@ import cors from 'cors';
 import { loadPlayerData, savePlayerData, playerData } from './utils/storage.js';
 import {handleClientMessage, broadcast, SendEntities, broadcastTime} from './routes/player.js';
 import { PORT } from './config.js';
-import { clients } from './utils/chunk.js';
+import {clients, entities, loadAnimalsFromFile} from './utils/chunk.js';
 import fs from "fs";
 import path from "path";
 
@@ -55,6 +55,8 @@ setInterval(broadcastTime, 50);
 wss.on('connection', (socket) => {
     socket.on('message', (message) => {
         try {
+            const load = loadAnimalsFromFile("entities.json")
+
             const data = JSON.parse(message);
             handleClientMessage(data, socket);
         } catch (error) {
