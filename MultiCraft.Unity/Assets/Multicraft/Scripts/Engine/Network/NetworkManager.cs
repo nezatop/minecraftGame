@@ -135,6 +135,10 @@ namespace MultiCraft.Scripts.Engine.Network
             _webSocket?.CloseAsync();
         }
 
+        public void Disconnect()
+        {
+            SendMessageToServer(new { type = "disconnect", player = playerName });
+        }
         #endregion
 
         private void Update()
@@ -649,12 +653,14 @@ namespace MultiCraft.Scripts.Engine.Network
             StartCoroutine(SendPlayerPositionRepeatedly());
         }
 
-        private void OpenDeadMenu()
+        private void OpenDeadMenu(GameObject deadPlayer)
         {
+            if(deadPlayer == _player)return;
             SendDropInventory();
             UiManager.Instance.OpenCloseDead();
             _player.GetComponent<Inventory>().Clear();
             _playerController.GetComponent<InteractController>().DisableScripts();
+            _player.SetActive(false);
         }
 
         public void RespawnPlayer()
@@ -665,6 +671,8 @@ namespace MultiCraft.Scripts.Engine.Network
             _playerController.health.ResetHealth();
             _playerController.GetComponent<HungerSystem>().hunger =
                 _playerController.GetComponent<HungerSystem>().maxHunger;
+            
+            _player.SetActive(true);
         }
 
         #endregion

@@ -220,7 +220,7 @@ namespace MultiCraft.Scripts.Engine.Core.Worlds
             SpawnFloraChunks();
         }
         
-        private void OpenDeadMenu()
+        private void OpenDeadMenu(GameObject deadPlayer)
         {
             UiManager.Instance.OpenCloseDead();
             _players[0].GetComponent<InteractController>().DisableScripts();

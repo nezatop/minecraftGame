@@ -12,7 +12,7 @@ namespace MultiCraft.Scripts.Engine.Core.HealthSystem
 
         public float maxHealth = 10;
 
-        public Action OnDeath;
+        public Action<GameObject> OnDeath;
         public Action<int> OnDamage;
 
         public bool haveHunger = true;
@@ -31,7 +31,7 @@ namespace MultiCraft.Scripts.Engine.Core.HealthSystem
         {
             StartCoroutine(ColorRes());
             health = Mathf.Clamp(health - damage, 0, maxHealth);
-            if (health <= 0) OnDeath?.Invoke();
+            if (health <= 0) OnDeath?.Invoke(gameObject);
             OnDamage?.Invoke((int)health);
         }
 
@@ -53,7 +53,7 @@ namespace MultiCraft.Scripts.Engine.Core.HealthSystem
         {
             const int damage = 1;
             health = Mathf.Clamp((health - damage), 1f, maxHealth);
-            if (health <= 0) OnDeath?.Invoke();
+            if (health <= 0) OnDeath?.Invoke(gameObject);
             OnDamage?.Invoke((int)health);
         }
 

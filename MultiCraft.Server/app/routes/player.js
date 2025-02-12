@@ -31,8 +31,8 @@ function getTimeFraction() {
     return (elapsed % DayDuration) / DayDuration;
 }
 
-export function broadcastTime() {
-    broadcast(JSON.stringify({
+export async function broadcastTime() {
+    await broadcast(JSON.stringify({
         type: 'time',
         time: getTimeFraction(),
     }));
@@ -138,10 +138,10 @@ function handleGetEntities(data, socket) {
     })
 }
 
-export function SendEntities() {
+export async function SendEntities() {
     if (entities.size > 0) { // Проверяем, есть ли сущности
         const entitiesArray = Array.from(entities.values()); // Преобразуем Map в массив
-        broadcast(JSON.stringify({
+        await broadcast(JSON.stringify({
             type: 'entities'
             , entities_list: entitiesArray
         }));
@@ -373,12 +373,12 @@ function getChunkContainingBlock(blockWorldPosition) {
 }
 
 export function sendMessage(socket, data) {
-    console.log(`[SERVER] Send message ${data.type} to socket.`);
+    //console.log(`[SERVER] Send message ${data.type} to socket.`);
     socket.send(JSON.stringify(data));
 }
 
 export function broadcast(data) {
-    console.log(`[SERVER] Send message ${data} to all sockets.`);
+    //console.log(`[SERVER] Send message ${data} to all sockets.`);
     clients.forEach((_, client) => {
         if (client.readyState === WebSocket.OPEN) {
             client.send(data);

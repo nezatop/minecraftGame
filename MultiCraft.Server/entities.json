@@ -3,18 +3,108 @@
     "id": "animal_0",
     "type": "pig",
     "position": {
-      "x": 8,
-      "y": 69,
-      "z": 13
+      "x": 4,
+      "y": 68,
+      "z": 2
     }
   },
   {
     "id": "animal_1",
     "type": "sheep",
     "position": {
-      "x": 7,
+      "x": 3,
+      "y": 69,
+      "z": 8
+    }
+  },
+  {
+    "id": "animal_2",
+    "type": "cow",
+    "position": {
+      "x": 27,
       "y": 67,
-      "z": 2
+      "z": 15
+    }
+  },
+  {
+    "id": "animal_3",
+    "type": "sheep",
+    "position": {
+      "x": 24,
+      "y": 77,
+      "z": 6
+    }
+  },
+  {
+    "id": "animal_4",
+    "type": "sheep",
+    "position": {
+      "x": 28,
+      "y": 75,
+      "z": 1
+    }
+  },
+  {
+    "id": "animal_5",
+    "type": "sheep",
+    "position": {
+      "x": 18,
+      "y": 68,
+      "z": 30
+    }
+  },
+  {
+    "id": "animal_6",
+    "type": "sheep",
+    "position": {
+      "x": 17,
+      "y": 68,
+      "z": 30
+    }
+  },
+  {
+    "id": "animal_7",
+    "type": "cow",
+    "position": {
+      "x": 25,
+      "y": 69,
+      "z": 18
+    }
+  },
+  {
+    "id": "animal_8",
+    "type": "sheep",
+    "position": {
+      "x": 24,
+      "y": 74,
+      "z": 35
+    }
+  },
+  {
+    "id": "animal_9",
+    "type": "pig",
+    "position": {
+      "x": 46,
+      "y": 69,
+      "z": -24
+    }
+  },
+  {
+    "id": "animal_10",
+    "type": "sheep",
+    "position": {
+      "x": 43,
+      "y": 77,
+      "z": -25
+    }
+  },
+  {
+    "id": "animal_11",
+    "type": "cow",
+    "position": {
+      "x": 33,
+      "y": 69,
+      "z": -24
     }
   }
 ]

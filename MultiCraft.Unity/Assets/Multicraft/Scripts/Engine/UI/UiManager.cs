@@ -314,6 +314,8 @@ namespace MultiCraft.Scripts.Engine.UI
 
         public void MainMenu()
         {
+            if(NetworkManager.Instance)
+                NetworkManager.Instance.Disconnect();
             SceneManager.LoadScene("MainMenu");
         }
 
