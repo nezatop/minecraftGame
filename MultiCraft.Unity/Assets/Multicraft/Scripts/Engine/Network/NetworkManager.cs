@@ -118,7 +118,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void OnClose(object sender, CloseEventArgs e)
         {
-            SendMessageToServer(new { type = "disconnect", player = playerName });
+            DisconnectPlayer();
             SceneManager.LoadScene("MainMenu");
             LogDebug($"[Client] Connection closed. Reason: {e.Reason}");
         }
@@ -131,13 +131,8 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void OnApplicationQuit()
         {
-            SendMessageToServer(new { type = "disconnect", player = playerName });
+            DisconnectPlayer();
             _webSocket?.CloseAsync();
-        }
-
-        public void Disconnect()
-        {
-            SendMessageToServer(new { type = "disconnect", player = playerName });
         }
         #endregion
 
@@ -682,7 +677,7 @@ namespace MultiCraft.Scripts.Engine.Network
             SendMessageToServer(new
             {
                 type = "PlayerDeath",
-                playerName,
+                playerName = playerName,
             });
             SendDropInventory();
             UiManager.Instance.OpenCloseDead();
@@ -697,7 +692,7 @@ namespace MultiCraft.Scripts.Engine.Network
             SendMessageToServer(new
             {
                 type = "PlayerRespawn",
-                playerName,
+                playerName = playerName,
             });
             _player.SetActive(true);
             _playerController.GetComponent<InteractController>().EnableScripts();
@@ -937,6 +932,7 @@ namespace MultiCraft.Scripts.Engine.Network
         private void SendMessageToServer(object message)
         {
             string jsonMessage = JsonSerializer.Serialize(message);
+            Debug.Log(jsonMessage);
             _webSocket.SendAsync(Encoding.UTF8.GetBytes(jsonMessage));
         }
 

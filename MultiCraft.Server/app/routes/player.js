@@ -80,7 +80,6 @@ export function handleClientMessage(data, socket) {
             handleSetInventory(data.item, socket);
             break;
         case 'disconnect':
-            handleSetInventory(data.item, socket);
             handleDisconnect(data, socket);
             break;
         case 'chat':
