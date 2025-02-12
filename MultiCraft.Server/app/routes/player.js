@@ -5,7 +5,7 @@ import {
     , createFloraChunk
     , createWaterChunk
     , entities
-    , getRandomSurfacePosition
+    , getRandomSurfacePosition, loadAnimalsFromFile
 } from '../utils/chunk.js';
 import { PlayerData } from "../models/player.js";
 import { addInventory, createInventory, getInventory, setInventory } from "../utils/inventory.js";
@@ -26,6 +26,9 @@ if (!fs.existsSync(chunkStorageDir)) {
 const DayDuration = 300;
 let startTime = Date.now();
 
+const load = loadAnimalsFromFile("entities.json")
+entities = load;
+
 function getTimeFraction() {
     let elapsed = (Date.now() - startTime) / 1000;
     return (elapsed % DayDuration) / DayDuration;
@@ -40,7 +43,7 @@ export async function broadcastTime() {
 
 export function handleClientMessage(data, socket) {
 
-    console.log(`[SERVER] Receive message ${data.type} from ${socket.id}.`);
+    //console.log(`[SERVER] Receive message ${data.type} from ${socket.id}.`);
 
     switch (data.type) {
         case 'connect':
@@ -63,6 +66,9 @@ export function handleClientMessage(data, socket) {
             break;
         case 'place_block':
             handlePlaceBlock(data.position, data.block_type, socket);
+            break;
+        case 'PlayerDeath':
+            handlePlayerDead(data.playerName, socket);
             break;
         case 'destroy_block':
             handleDestroyBlock(data.position, socket);
@@ -89,6 +95,9 @@ export function handleClientMessage(data, socket) {
         case 'Attack':
             handleAttack(data, socket);
             break;
+        case 'PlayerRespawn':
+            handleRespawn(data, socket);
+            break;
         default:
     }
 }
@@ -96,6 +105,14 @@ export function handleClientMessage(data, socket) {
 function handleLoaded(data, socket) {
     const { login} = data;
     broadcast(JSON.stringify({ type: 'player_connected', player_id: login, position: playerData.get(login).position }));
+}
+
+function handlePlayerDead(playerName, socket) {
+    broadcast(JSON.stringify({ type: 'player_dead', player_id: playerName }));
+}
+
+function handleRespawn(playerName, socket) {
+    broadcast(JSON.stringify({ type: 'Player_respawn', player_id: playerName }));
 }
 
 function handleDisconnect(data, socket) {

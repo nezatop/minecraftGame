@@ -51,11 +51,11 @@ const wss = new WebSocketServer({ server });
 // Интервальный вызов функции SendEntities
 setInterval(SendEntities, updateInterval);
 setInterval(broadcastTime, 50);
+
 // Обработка подключения WebSocket
 wss.on('connection', (socket) => {
     socket.on('message', (message) => {
         try {
-            const load = loadAnimalsFromFile("entities.json")
 
             const data = JSON.parse(message);
             handleClientMessage(data, socket);

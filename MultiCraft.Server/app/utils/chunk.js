@@ -72,7 +72,8 @@ export function generateAnimals(blocks, offsetX, offsetY, offsetZ) {
             const type = ANIMAL_TYPES[Math.floor(Math.random() * ANIMAL_TYPES.length)];
             const id = `animal_${entities.size}`;
 
-            entities.set(id, {id, type, position});
+            if(!entities.has(id))
+                entities.set(id, {id, type, position});
         }
     }
 }

@@ -47,5 +47,11 @@ namespace Multicraft.Scripts.Engine.Core.Hunger
             onHungerChanged?.Invoke((int)hunger);
             Debug.Log($"Ate food, hunger restored by {foodValue}. Current hunger: {hunger}");
         }
+
+        public void ResetHunger()
+        {
+           hunger = maxHunger;
+           onHungerChanged?.Invoke((int)hunger);
+        }
     }
 }

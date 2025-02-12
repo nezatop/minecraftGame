@@ -65,8 +65,8 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private Vector3 _startPosition;
         
-        private float targetTime = 0f;
-        private float smoothSpeed = 2f; 
+        private float _targetTime = 0f;
+        private const float SmoothSpeed = 2f;
 
         #endregion
 
@@ -145,9 +145,9 @@ namespace MultiCraft.Scripts.Engine.Network
         {
             if (DayCycleManager.Instance != null)
             {
-                if (DayCycleManager.Instance.TimeOfDay > targetTime)
+                if (DayCycleManager.Instance.TimeOfDay > _targetTime)
                     DayCycleManager.Instance.TimeOfDay -= 1;
-                if(DayCycleManager.Instance.DayNight)DayCycleManager.Instance.TimeOfDay = Mathf.Lerp(DayCycleManager.Instance.TimeOfDay, targetTime, Time.deltaTime * smoothSpeed);
+                if(DayCycleManager.Instance.DayNight)DayCycleManager.Instance.TimeOfDay = Mathf.Lerp(DayCycleManager.Instance.TimeOfDay, _targetTime, Time.deltaTime * SmoothSpeed);
             }
             
             if (ChunksToGet.TryDequeue(out Vector3Int chunkPosition))
@@ -192,6 +192,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void OnDestroy()
         {
+            _webSocket.CloseAsync();
             if(_playerController)
                 _playerController.health.OnDeath -= OpenDeadMenu;
         }
@@ -244,6 +245,14 @@ namespace MultiCraft.Scripts.Engine.Network
                         OnPlayersListReceived(message.RootElement);
                         break;
 
+                    case "player_dead":
+                        OnPlayerDead(message.RootElement);
+                        break;
+                    
+                    case "Player_respawn":
+                        OnPlayerRespawn(message.RootElement);
+                        break;
+                    
                     case "chunk_data":
                         StartCoroutine(HandleChunkData(message.RootElement));
                         break;
@@ -263,8 +272,7 @@ namespace MultiCraft.Scripts.Engine.Network
                     case "drop_inventory":
                         HandleDropInventory(message.RootElement);
                         break;
-
-
+                    
                     case "chat":
                         HandleChat(message.RootElement);
                         break;
@@ -295,7 +303,7 @@ namespace MultiCraft.Scripts.Engine.Network
         
         private void HandleTime(JsonElement data)
         {
-            targetTime = data.GetProperty("time").GetSingle(); // Получаем новое время
+            _targetTime = data.GetProperty("time").GetSingle(); // Получаем новое время
         }
         
         private void OnConnected(JsonElement data)
@@ -333,12 +341,11 @@ namespace MultiCraft.Scripts.Engine.Network
             if (playerId == null || playerId == playerName ||
                 !_otherPlayers.TryGetValue(playerId, out var player)) return;
             var playerAnimator = player.animator;
-            var smoothSpeed = 0.1f;
             var previousPosition = player.transform.position;
             player.transform.position = targetPosition;
 
             var targetQuaternion = Quaternion.Euler(targetRotation);
-            player.transform.rotation = Quaternion.Lerp(player.transform.rotation, targetQuaternion, smoothSpeed);
+            player.transform.rotation = Quaternion.Lerp(player.transform.rotation, targetQuaternion, SmoothSpeed);
 
             playerAnimator.SetFloat(VelocityX, velocity.x * 4);
             playerAnimator.SetFloat(VelocityY, velocity.y);
@@ -351,9 +358,8 @@ namespace MultiCraft.Scripts.Engine.Network
             var playerId = data.GetProperty("player_id").GetString();
 
             UiManager.Instance.ChatWindow.commandReader.PrintLog($"{playerId}: Вышел с сервера");
-            if (playerId == null || !_otherPlayers.TryGetValue(playerId, out var player)) return;
-            Destroy(player);
-            _otherPlayers.Remove(playerId);
+            if (playerId == null || !_otherPlayers.Remove(playerId, out var player)) return;
+            Destroy(player.gameObject);
         }
 
         private void HandlePlayerUpdate(JsonElement data)
@@ -371,6 +377,26 @@ namespace MultiCraft.Scripts.Engine.Network
                 playerObject.playerName = playerId;
                 playerObject.Init();
                 if (playerId != null) _otherPlayers[playerId] = playerObject;
+            }
+        }
+        
+        private void OnPlayerDead(JsonElement data)
+        {
+            string playerId = data.GetProperty("player_id").GetString();
+
+            if (playerId != null && _otherPlayers.TryGetValue(playerId, out OtherNetPlayer player))
+            {
+                player.gameObject.SetActive(false);
+            }
+        }
+        
+        private void OnPlayerRespawn(JsonElement data)
+        {
+            string playerId = data.GetProperty("player_id").GetString();
+
+            if (playerId != null && _otherPlayers.TryGetValue(playerId, out OtherNetPlayer player))
+            {
+                player.gameObject.SetActive(true);
             }
         }
 
@@ -470,15 +496,7 @@ namespace MultiCraft.Scripts.Engine.Network
                 foreach (var entity in entities)
                 {
                     if (_animals.ContainsKey(entity.ID)) continue;
-                    if (!(_playerPosition.x -
-                          NetworkWorld.Instance.settings.viewDistanceInChunks * NetworkWorld.ChunkWidth <=
-                          entity.Position.x &&
-                          _playerPosition.x + NetworkWorld.Instance.settings.viewDistanceInChunks *
-                          NetworkWorld.ChunkWidth >= entity.Position.x &&
-                          _playerPosition.z - NetworkWorld.Instance.settings.viewDistanceInChunks *
-                          NetworkWorld.ChunkWidth <= entity.Position.z &&
-                          _playerPosition.z + NetworkWorld.Instance.settings.viewDistanceInChunks *
-                          NetworkWorld.ChunkWidth >= entity.Position.z)) continue;
+                    if (!ChunkSpawned(entity.Position)) continue;
                     var animal = Instantiate(animalPrefab,
                         entity.Position + new Vector3(
                             entity.Position.x >= 0 ? 0.5f : -0.5f,
@@ -494,6 +512,11 @@ namespace MultiCraft.Scripts.Engine.Network
             }
         }
 
+        public bool ChunkSpawned(Vector3 position)
+        {
+            return NetworkWorld.Instance.Chunks.ContainsKey(NetworkWorld.Instance.GetChunkContainBlock(Vector3Int.FloorToInt(position)));
+        }
+        
         #endregion
 
         #region HandleChunks
@@ -652,10 +675,15 @@ namespace MultiCraft.Scripts.Engine.Network
             
             StartCoroutine(SendPlayerPositionRepeatedly());
         }
-
+        
         private void OpenDeadMenu(GameObject deadPlayer)
         {
-            if(deadPlayer == _player)return;
+            if(deadPlayer != _player)return;
+            SendMessageToServer(new
+            {
+                type = "PlayerDeath",
+                playerName,
+            });
             SendDropInventory();
             UiManager.Instance.OpenCloseDead();
             _player.GetComponent<Inventory>().Clear();
@@ -666,13 +694,17 @@ namespace MultiCraft.Scripts.Engine.Network
         public void RespawnPlayer()
         {
             UiManager.Instance.CloseDead();
+            SendMessageToServer(new
+            {
+                type = "PlayerRespawn",
+                playerName,
+            });
+            _player.SetActive(true);
             _playerController.GetComponent<InteractController>().EnableScripts();
             _player.transform.position = _startPosition;
             _playerController.health.ResetHealth();
-            _playerController.GetComponent<HungerSystem>().hunger =
-                _playerController.GetComponent<HungerSystem>().maxHunger;
-            
-            _player.SetActive(true);
+            _playerController.GetComponent<HungerSystem>().ResetHunger();
+
         }
 
         #endregion

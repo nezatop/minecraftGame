@@ -34,10 +34,10 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
         #region Chunk Dictionaries
 
-        [Header("Chunks Dictionary")] public int ChunksLoaded => _chunks.Count;
-        private Dictionary<Vector3Int, Chunk> _chunks;
-        private Dictionary<Vector3Int, Chunk> _waterChunks;
-        private Dictionary<Vector3Int, Chunk> _floraChunks;
+        [Header("Chunks Dictionary")] public int ChunksLoaded => Chunks.Count;
+        public Dictionary<Vector3Int, Chunk> Chunks;
+        public Dictionary<Vector3Int, Chunk> WaterChunks;
+        public Dictionary<Vector3Int, Chunk> FloraChunks;
 
         #endregion
 
@@ -81,9 +81,9 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
         private IEnumerator InitializeWorld()
         {
-            _chunks = new Dictionary<Vector3Int, Chunk>();
-            _waterChunks = new Dictionary<Vector3Int, Chunk>();
-            _floraChunks = new Dictionary<Vector3Int, Chunk>();
+            Chunks = new Dictionary<Vector3Int, Chunk>();
+            WaterChunks = new Dictionary<Vector3Int, Chunk>();
+            FloraChunks = new Dictionary<Vector3Int, Chunk>();
 
             ChunkRenderer.InitializeTriangles();
             DropItemRenderer.InitializeTriangles();
@@ -118,7 +118,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
             var positions = GetChunkContainBlock(currentPosition);
             
-            foreach (var chunkEntry in _chunks)
+            foreach (var chunkEntry in Chunks)
             {
                 Vector3Int chunkPosition = chunkEntry.Key;
 
@@ -137,13 +137,13 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
             foreach (var chunkPosition in chunksToRemove)
             {
                 StartCoroutine(NetworkManager.Instance.DestroyChunk(chunkPosition));
-                if(_chunks[chunkPosition].Renderer)
+                if(Chunks[chunkPosition].Renderer)
                 {
-                    Destroy(_chunks[chunkPosition].Renderer.gameObject);
-                    Destroy(_floraChunks[chunkPosition].Renderer.gameObject);
-                    Destroy(_waterChunks[chunkPosition].Renderer.gameObject);
+                    Destroy(Chunks[chunkPosition].Renderer.gameObject);
+                    Destroy(FloraChunks[chunkPosition].Renderer.gameObject);
+                    Destroy(WaterChunks[chunkPosition].Renderer.gameObject);
                 } // Если чанк использует ресурсы, освободите их
-                _chunks.Remove(chunkPosition); // Удаляем из словаря
+                Chunks.Remove(chunkPosition); // Удаляем из словаря
             }
 
             /*
@@ -184,7 +184,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
         public IEnumerator SpawnChunk(Vector3Int position, int[,,] blocks)
         {
-            if (_chunks.ContainsKey(position))
+            if (Chunks.ContainsKey(position))
                 yield break;
 
             Chunk chunk = new Chunk()
@@ -196,14 +196,14 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
             yield return null;
 
-            _chunks.Add(position, chunk);
+            Chunks.Add(position, chunk);
 
             yield return null;
         }
 
         public IEnumerator SpawnWaterChunk(Vector3Int position, int[,,] blocks)
         {
-            if (_waterChunks.ContainsKey(position))
+            if (WaterChunks.ContainsKey(position))
                 yield break;
             Chunk chunk = new Chunk()
             {
@@ -214,14 +214,14 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
             yield return null;
 
-            _waterChunks.Add(position, chunk);
+            WaterChunks.Add(position, chunk);
 
             yield return null;
         }
 
         public IEnumerator SpawnFloraChunk(Vector3Int position, int[,,] blocks)
         {
-            if (_floraChunks.ContainsKey(position))
+            if (FloraChunks.ContainsKey(position))
                 yield break;
             Chunk chunk = new Chunk()
             {
@@ -232,7 +232,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
             yield return null;
 
-            _floraChunks.Add(position, chunk);
+            FloraChunks.Add(position, chunk);
 
             yield return null;
         }
@@ -257,7 +257,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
                          z++)
                     {
                         var chunkPos = new Vector3Int(x, 0, z);
-                        if (_chunks.TryGetValue(chunkPos, out var chunk))
+                        if (Chunks.TryGetValue(chunkPos, out var chunk))
                         {
                             if (!chunk.Renderer && !NetworkManager.Instance.ChunksToRender.Contains(chunkPos))
                                 NetworkManager.Instance.ChunksToRender.Enqueue(chunkPos);
@@ -279,17 +279,17 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
         public IEnumerator RenderChunks(Vector3Int position)
         {
-            yield return RenderChunk(position, _chunks, _meshingResults);
+            yield return RenderChunk(position, Chunks, _meshingResults);
         }
 
         public IEnumerator RenderWaterChunks(Vector3Int position)
         {
-            yield return RenderChunk(position, _waterChunks, _meshingWaterResults);
+            yield return RenderChunk(position, WaterChunks, _meshingWaterResults);
         }
 
         public IEnumerator RenderFloraChunks(Vector3Int position)
         {
-            yield return RenderChunk(position, _floraChunks, _meshingFloraResults);
+            yield return RenderChunk(position, FloraChunks, _meshingFloraResults);
         }
 
         private IEnumerator RenderChunk(Vector3Int position, Dictionary<Vector3Int, Chunk> chunkDict,
@@ -341,7 +341,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
             var chunkPosition = GetChunkContainBlock(Vector3Int.FloorToInt(blockPosition));
 
             int blockId = 0;
-            if (_chunks.TryGetValue(chunkPosition, out var chunk))
+            if (Chunks.TryGetValue(chunkPosition, out var chunk))
             {
                 var chunkOrigin = new Vector3Int(chunkPosition.x, chunkPosition.y, chunkPosition.z) * ChunkWidth;
                 var blockChunkPosition = blockWorldPosition - chunkOrigin;
@@ -350,7 +350,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
 
             if (blockId == 0)
             {
-                if (_floraChunks.TryGetValue(chunkPosition, out chunk))
+                if (FloraChunks.TryGetValue(chunkPosition, out chunk))
                 {
                     var chunkOrigin = new Vector3Int(chunkPosition.x, chunkPosition.y, chunkPosition.z) * ChunkWidth;
                     var blockChunkPosition = blockWorldPosition - chunkOrigin;
@@ -393,7 +393,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
         {
             var blockWorldPosition = Vector3Int.FloorToInt(position);
             var chunkPosition = GetChunkContainBlock(blockWorldPosition);
-            if (_chunks.TryGetValue(chunkPosition, out var chunk))
+            if (Chunks.TryGetValue(chunkPosition, out var chunk))
             {
                 var chunkOrigin = chunkPosition * ChunkWidth;
                 var blockChunkPosition = blockWorldPosition - chunkOrigin;
@@ -410,7 +410,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
         {
             var blockWorldPosition = Vector3Int.FloorToInt(position);
             var chunkPosition = GetChunkContainBlock(blockWorldPosition);
-            if (_floraChunks.TryGetValue(chunkPosition, out var chunk))
+            if (FloraChunks.TryGetValue(chunkPosition, out var chunk))
             {
                 var chunkOrigin = chunkPosition * ChunkWidth;
                 var blockChunkPosition = blockWorldPosition - chunkOrigin;
