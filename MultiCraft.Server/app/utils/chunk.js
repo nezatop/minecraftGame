@@ -6,7 +6,7 @@ export const chunkMap = new Map();
 export const waterChunkMap = new Map();
 export const floraChunkMap = new Map();
 
-export let entities = new Map();
+export let entities = loadAnimalsFromFile("entities.json");
 
 const ANIMAL_TYPES = ['sheep', 'cow', 'pig'];
 const NUM_ANIMALS = 20;

@@ -26,9 +26,6 @@ if (!fs.existsSync(chunkStorageDir)) {
 const DayDuration = 300;
 let startTime = Date.now();
 
-const load = loadAnimalsFromFile("entities.json")
-entities = load;
-
 function getTimeFraction() {
     let elapsed = (Date.now() - startTime) / 1000;
     return (elapsed % DayDuration) / DayDuration;
