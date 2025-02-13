@@ -1,4 +1,3 @@
-
 using MultiCraft.Scripts.Engine.Core.Blocks;
 using MultiCraft.Scripts.Engine.Core.Entities;
 using Multicraft.Scripts.Engine.Core.Hunger;
@@ -26,7 +25,7 @@ namespace MultiCraft.Scripts.Engine.Network.Player
         private Inventory _playerInventory;
 
         private GameObject _destroyBlock;
-        
+
         public HungerSystem HungerSystem;
 
         private Material _material;
@@ -96,8 +95,8 @@ namespace MultiCraft.Scripts.Engine.Network.Player
                 if (_isSurvival) _destroyBlock.SetActive(false);
             }
 
-            if(YG2.envir.isMobile)return;
-            
+            if (YG2.envir.isMobile) return;
+
             if (Input.GetMouseButtonDown(1))
             {
                 if (TryOpenBlock()) return;
@@ -111,7 +110,7 @@ namespace MultiCraft.Scripts.Engine.Network.Player
             {
                 _nextPlaceTime = 0f;
             }
-            
+
             if (Input.GetMouseButtonDown(1))
             {
                 TryEatItem();
@@ -168,10 +167,10 @@ namespace MultiCraft.Scripts.Engine.Network.Player
 
             var selectedItem = _playerInventory.GetSelectedItem();
             var damage = 1;
-            if(selectedItem != null)
-                if(selectedItem.Item != null)
+            if (selectedItem != null)
+                if (selectedItem.Item != null)
                     damage = selectedItem.Item.Damage;
-            if(damage == 0)
+            if (damage == 0)
                 damage = 1;
             var Mob = hitObject.GetComponent<Mob>();
             if (Mob != null)
@@ -179,16 +178,13 @@ namespace MultiCraft.Scripts.Engine.Network.Player
                 Debug.Log($"Hit object: {hitObject.name}");
                 StartCoroutine(Mob.TakeDamage(damage, -hitInfo.normal));
             }
-            
+
             var otherPlayer = hitObject.GetComponent<OtherNetPlayer>();
             if (otherPlayer != null)
             {
-                Debug.Log($"Hit object: {hitObject.name}"); 
-                if(otherPlayer.health.health > 0)
-                {
-                    otherPlayer.health.TakeDamage(damage);
-                    NetworkManager.Instance.ServerMassageAttack(damage, otherPlayer.playerName);
-                }
+                Debug.Log($"Hit object: {hitObject.name}");
+                otherPlayer.health.TakeDamage(damage);
+                NetworkManager.Instance.ServerMassageAttack(damage, otherPlayer.playerName);
             }
 
             return true;
@@ -246,7 +242,7 @@ namespace MultiCraft.Scripts.Engine.Network.Player
                 _playerInventory.RemoveSelectedItem();
             }
         }
-        
+
         public void TryDestroyBlock()
         {
             if (!Physics.Raycast(transform.position, transform.forward, out var hitInfo, 5f, worldLayer)) return;
@@ -258,7 +254,7 @@ namespace MultiCraft.Scripts.Engine.Network.Player
                 _currentDamage = 0f;
                 _targetBlockPosition = blockPosition;
                 _currentBlock = NetworkWorld.Instance.GetBlockAtPosition(blockPosition);
-                if(_currentBlock == null)
+                if (_currentBlock == null)
                     return;
             }
 

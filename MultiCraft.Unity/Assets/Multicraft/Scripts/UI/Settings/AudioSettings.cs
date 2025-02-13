@@ -79,6 +79,11 @@ namespace MultiCraft.Scripts.Settings.UI
             musicVolumeSlider.value = PlayerPrefs.HasKey(MusicVolumeKey) ? PlayerPrefs.GetFloat(MusicVolumeKey) : defaultMusicVolume;
             soundVolumeSlider.value = PlayerPrefs.HasKey(SoundVolumeKey) ? PlayerPrefs.GetFloat(SoundVolumeKey) : defaultSoundVolume;
             environmentVolumeSlider.value = PlayerPrefs.HasKey(EnvironmentVolumeKey) ? PlayerPrefs.GetFloat(EnvironmentVolumeKey) : defaultEnvironmentVolume;
+
+            SetMasterVolume(masterVolumeSlider.value);
+            SetMusicVolume(musicVolumeSlider.value);
+            SetSoundVolume(soundVolumeSlider.value);
+            SetEnvironmentVolume(environmentVolumeSlider.value);
         }
         
         private void SetMasterVolume(float volume)

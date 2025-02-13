@@ -16,7 +16,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const updateInterval = 10000 / 200;
+const updateInterval = 5000;
 
 // Путь к сертификатам
 const keyPath = '/etc/letsencrypt/live/bloxter.fun/privkey.pem';
@@ -50,7 +50,7 @@ const wss = new WebSocketServer({ server });
 
 // Интервальный вызов функции SendEntities
 setInterval(SendEntities, updateInterval);
-setInterval(broadcastTime, 50);
+setInterval(broadcastTime, 250);
 
 // Обработка подключения WebSocket
 wss.on('connection', (socket) => {

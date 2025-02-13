@@ -153,6 +153,9 @@ namespace MultiCraft.Scripts.Engine.UI
 
         public bool OpenCloseInventory()
         {
+            CloseDead();
+            CloseChat();
+            ClosePause();
             if (InventoryWindow.gameObject.activeSelf)
             {
                 CloseInventory();
@@ -185,6 +188,10 @@ namespace MultiCraft.Scripts.Engine.UI
 
         public bool OpenCloseChat()
         {
+            CloseChest();
+            CloseDead();
+            CloseInventory();
+            ClosePause();
             if (ChatWindow.gameObject.activeSelf)
             {
                 CloseChat();
@@ -251,6 +258,7 @@ namespace MultiCraft.Scripts.Engine.UI
             CloseInventory();
             CloseChest();
             CloseChat();
+            CloseDead();
             if (PauseScreen.activeSelf)
             {
                 ClosePause();
@@ -284,6 +292,7 @@ namespace MultiCraft.Scripts.Engine.UI
             CloseInventory();
             CloseChest();
             CloseChat();
+            ClosePause();
             if (GameOverScreen.activeSelf)
             {
                 CloseDead();

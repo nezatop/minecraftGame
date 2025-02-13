@@ -38,7 +38,7 @@ export async function broadcastTime() {
     }));
 }
 
-export function handleClientMessage(data, socket) {
+export async function handleClientMessage(data, socket) {
 
     //console.log(`[SERVER] Receive message ${data.type} from ${socket.id}.`);
 

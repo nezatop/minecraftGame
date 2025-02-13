@@ -70,12 +70,10 @@ namespace MultiCraft.Scripts.Engine.Core.Player
 
         private void OpenInventory(InputAction.CallbackContext obj)
         {
-            if (_activeChat) return;
             if (UiManager.Instance.OpenCloseInventory())
                 DisableScripts();
             else
                 EnableScripts();
-            _activeInventory = !_activeInventory;
         }
 
         private void OpenPouseMenu(InputAction.CallbackContext obj)
@@ -84,14 +82,10 @@ namespace MultiCraft.Scripts.Engine.Core.Player
                 DisableScripts();
             else
                 EnableScripts();
-            if (_activeChat) return;
-            _activeInventory = !_activeInventory;
         }
 
         private void OpenChat(InputAction.CallbackContext obj)
         {
-            if (_activeInventory) return;
-            _activeChat = !_activeChat;
             if (UiManager.Instance.OpenCloseChat())
                 DisableScripts();
             else
@@ -100,8 +94,6 @@ namespace MultiCraft.Scripts.Engine.Core.Player
 
         public void OpenChat()
         {
-            if (_activeInventory) return;
-            _activeChat = !_activeChat;
             if (UiManager.Instance.OpenCloseChat())
                 DisableScripts();
             else

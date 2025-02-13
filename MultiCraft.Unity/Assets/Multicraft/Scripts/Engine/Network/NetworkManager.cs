@@ -275,6 +275,10 @@ namespace MultiCraft.Scripts.Engine.Network
                     case "entities":
                         HandleGetEntities(message.RootElement);
                         break;
+                    
+                    case "Attack":
+                        HandleAttack(message.RootElement);
+                        break;
 
                     default:
                         LogWarning($"[Client] Unknown message type: {type}");
@@ -323,6 +327,11 @@ namespace MultiCraft.Scripts.Engine.Network
                 playerObject.Init();
                 _otherPlayers[playerId] = playerObject;
             }
+        }
+        
+        private void HandleAttack(JsonElement data)
+        {
+            
         }
 
         private void OnPlayerMoved(JsonElement data)
@@ -392,6 +401,7 @@ namespace MultiCraft.Scripts.Engine.Network
             if (playerId != null && _otherPlayers.TryGetValue(playerId, out OtherNetPlayer player))
             {
                 player.gameObject.SetActive(true);
+                player.health.ResetHealth();
             }
         }
 
@@ -509,7 +519,8 @@ namespace MultiCraft.Scripts.Engine.Network
 
         public bool ChunkSpawned(Vector3 position)
         {
-            return NetworkWorld.Instance.Chunks.ContainsKey(NetworkWorld.Instance.GetChunkContainBlock(Vector3Int.FloorToInt(position)));
+            NetworkWorld.Instance.Chunks.TryGetValue(NetworkWorld.Instance.GetChunkContainBlock(Vector3Int.FloorToInt(position)), out var chunk);
+            return chunk == null ? false : chunk.Renderer;
         }
         
         #endregion
