@@ -316,7 +316,7 @@ namespace MultiCraft.Scripts.Engine.Network
             string playerId = data.GetProperty("player_id").GetString();
             Vector3 position = JsonToVector3(data.GetProperty("position"));
 
-            UiManager.Instance.ChatWindow.commandReader.PrintLog($"{playerId}: Зашел на сервер", new Color(0,128/255f,0));
+            UiManager.Instance.ChatWindow.commandReader.PrintLog($"{playerId}: Зашел на сервер", new Color(0,255/255f,0));
 
             if (playerId != null && !_otherPlayers.ContainsKey(playerId) && playerId != playerName)
             {
@@ -643,7 +643,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
             _startPosition = _playerPosition;
 
-            _player = Instantiate(playerPrefab, _playerPosition + Vector3.up * 2, Quaternion.identity);
+            _player = Instantiate(playerPrefab, _playerPosition + Vector3.up, Quaternion.identity);
             _playerController = _player.GetComponent<PlayerController>();
 
             _playerController.variableJoystick = moveJoystick;
