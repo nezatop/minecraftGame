@@ -14,9 +14,6 @@ namespace MultiCraft.Scripts.Engine.Network.Player
         public Camera mainCamera;
 
         private InputSystem_Actions _inputSystem;
-
-        private bool _activeInventory = false;
-        private bool _activeChat = false;
         
         private void Awake()
         {

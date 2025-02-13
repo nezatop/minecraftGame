@@ -1,26 +1,29 @@
+using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace MultiCraft.Scripts.Settings.UI
 {
     public class LoadShadowSettings : MonoBehaviour
     {
-        public bool Shadows;
+        public bool shadows;
 
         private const string ShadowsKey = "ShadowToggleState";
 
+        [Obsolete("Obsolete")]
         private void Awake()
         {
             LoadShadowToggleState();
-            QualitySettings.shadows = Shadows ? ShadowQuality.All : ShadowQuality.Disable;
-            foreach (Light light in FindObjectsOfType<Light>())
+            QualitySettings.shadows = shadows ? ShadowQuality.All : ShadowQuality.Disable;
+            foreach (Light light1 in FindObjectsOfType<Light>())
             {
-                light.shadows = Shadows ? LightShadows.Soft : LightShadows.None;
+                light1.shadows = shadows ? LightShadows.Soft : LightShadows.None;
             }
         }
 
         private void LoadShadowToggleState()
         {
-            Shadows = PlayerPrefs.GetInt(ShadowsKey, 0) == 1;
+            shadows = PlayerPrefs.GetInt(ShadowsKey, 0) == 1;
         }
     }
 }

@@ -47,7 +47,7 @@ export function getRandomSurfacePosition() {
 
 export function createChunk(offsetX, offsetY, offsetZ) {
     const blocks = worldGenerator.generate(offsetX, offsetZ);
-    if (Math.random() < 0.2) {
+    if (Math.random() < 0.1) {
         generateAnimals(blocks, offsetX, offsetY, offsetZ);
         saveAnimalsToFile("entities.json", entities)
     }

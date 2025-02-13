@@ -3,18 +3,16 @@ using System.Collections.Generic;
 using MultiCraft.Scripts.Engine.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 namespace MultiCraft.Scripts.Engine.Core.Player
 {
     public class InteractController : MonoBehaviour
     {
-        public List<MonoBehaviour> ScriptsToDisable = null;
+        public List<MonoBehaviour> scriptsToDisable = null;
         public Camera mainCamera;
 
         private InputSystem_Actions _inputSystem;
-
-        private bool _activeInventory = false;
-        private bool _activeChat = false;
 
         private void Awake()
         {
@@ -46,7 +44,7 @@ namespace MultiCraft.Scripts.Engine.Core.Player
 
         public void EnableScripts()
         {
-            foreach (var script in ScriptsToDisable)
+            foreach (var script in scriptsToDisable)
             {
                 script.enabled = true;
             }
@@ -58,7 +56,7 @@ namespace MultiCraft.Scripts.Engine.Core.Player
 
         public void DisableScripts()
         {
-            foreach (var script in ScriptsToDisable)
+            foreach (var script in scriptsToDisable)
             {
                 script.enabled = false;
             }
