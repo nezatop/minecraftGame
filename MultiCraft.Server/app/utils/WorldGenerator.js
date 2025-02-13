@@ -239,7 +239,7 @@ export const Config = {
 
 export class WorldGenerator {
     constructor(config) {
-        const seed = 7845687;
+        const seed = 784785687;
         this.config = config;
         this.biomes = this.initializeBiomes();
         this.surfaceNoise = this.initializeNoiseGenerators(config.SurfaceNoiseOctaves, seed);
