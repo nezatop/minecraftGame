@@ -683,7 +683,6 @@ namespace MultiCraft.Scripts.Engine.Network
             UiManager.Instance.OpenCloseDead();
             _player.GetComponent<Inventory>().Clear();
             _playerController.GetComponent<InteractController>().DisableScripts();
-            _player.SetActive(false);
         }
 
         public void RespawnPlayer()
@@ -694,7 +693,6 @@ namespace MultiCraft.Scripts.Engine.Network
                 type = "PlayerRespawn",
                 playerName = playerName,
             });
-            _player.SetActive(true);
             _playerController.GetComponent<InteractController>().EnableScripts();
             _player.transform.position = _startPosition;
             _playerController.health.ResetHealth();

@@ -92,7 +92,7 @@ export function handleClientMessage(data, socket) {
             handleAttack(data, socket);
             break;
         case 'PlayerRespawn':
-            handleRespawn(data, socket);
+            handleRespawn(data.playerName, socket);
             break;
         default:
     }
