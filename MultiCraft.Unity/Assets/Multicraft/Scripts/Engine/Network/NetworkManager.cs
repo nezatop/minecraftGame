@@ -54,6 +54,7 @@ namespace MultiCraft.Scripts.Engine.Network
         public ConcurrentQueue<Vector3Int> ChunksToGet;
         public HashSet<Vector3Int> RequestedChunks;
         public HashSet<Vector3Int> SpawnedChunks;
+        public HashSet<Vector3Int> GettedChunks;
         private int _requestedChunks = 0;
 
         public bool canSpawnPlayer;
@@ -80,6 +81,7 @@ namespace MultiCraft.Scripts.Engine.Network
             ChunksToGet = new ConcurrentQueue<Vector3Int>();
             RequestedChunks = new HashSet<Vector3Int>();
             SpawnedChunks = new HashSet<Vector3Int>();
+            GettedChunks = new HashSet<Vector3Int>();
 
             _otherPlayers = new Dictionary<string, OtherNetPlayer>();
             _animals = new Dictionary<string, GameObject>();
@@ -276,10 +278,6 @@ namespace MultiCraft.Scripts.Engine.Network
                         HandleGetEntities(message.RootElement);
                         break;
                     
-                    case "Attack":
-                        HandleAttack(message.RootElement);
-                        break;
-
                     default:
                         LogWarning($"[Client] Unknown message type: {type}");
                         break;
@@ -318,7 +316,7 @@ namespace MultiCraft.Scripts.Engine.Network
             string playerId = data.GetProperty("player_id").GetString();
             Vector3 position = JsonToVector3(data.GetProperty("position"));
 
-            UiManager.Instance.ChatWindow.commandReader.PrintLog($"{playerId}: Зашел на сервер");
+            UiManager.Instance.ChatWindow.commandReader.PrintLog($"{playerId}: Зашел на сервер", new Color(0,128,0));
 
             if (playerId != null && !_otherPlayers.ContainsKey(playerId) && playerId != playerName)
             {
@@ -329,11 +327,6 @@ namespace MultiCraft.Scripts.Engine.Network
             }
         }
         
-        private void HandleAttack(JsonElement data)
-        {
-            
-        }
-
         private void OnPlayerMoved(JsonElement data)
         {
             var playerId = data.GetProperty("player_id").GetString();
@@ -361,7 +354,7 @@ namespace MultiCraft.Scripts.Engine.Network
         {
             var playerId = data.GetProperty("player_id").GetString();
 
-            UiManager.Instance.ChatWindow.commandReader.PrintLog($"{playerId}: Вышел с сервера");
+            UiManager.Instance.ChatWindow.commandReader.PrintLog($"{playerId}: Вышел с сервера", new Color(231, 76, 60));
             if (playerId == null || !_otherPlayers.Remove(playerId, out var player)) return;
             Destroy(player.gameObject);
         }
@@ -401,6 +394,7 @@ namespace MultiCraft.Scripts.Engine.Network
             if (playerId != null && _otherPlayers.TryGetValue(playerId, out OtherNetPlayer player))
             {
                 player.gameObject.SetActive(true);
+                player.health.TakeDamage(0);
                 player.health.ResetHealth();
             }
         }
@@ -530,6 +524,9 @@ namespace MultiCraft.Scripts.Engine.Network
         private IEnumerator HandleChunkData(JsonElement data)
         {
             Vector3Int chunkCoord = JsonToVector3Int(data.GetProperty("position"));
+
+            if (!GettedChunks.Add(chunkCoord))
+                yield break;
 
             int[,,] blocks = null;
             int[,,] waterBlocks = null;

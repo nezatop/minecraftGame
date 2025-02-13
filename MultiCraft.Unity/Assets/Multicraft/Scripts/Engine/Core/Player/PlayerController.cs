@@ -62,6 +62,9 @@ namespace MultiCraft.Scripts.Engine.Core.Player
         private InteractController _interactController;
         private Network.Player.InteractController _interactControllerNetwork;
         
+        private float _healTimer = 0f; // Таймер для отслеживания времени
+        private const float HealInterval = 1f; 
+        
         public float horizontalInput;
         public float verticalInput;
         private void Start()
@@ -84,10 +87,17 @@ namespace MultiCraft.Scripts.Engine.Core.Player
 
         private void Update()
         {
-            HandleHeal();
             HandleMovement();
             HandleItemInteraction();
             HandleAnimation();
+            
+            _healTimer += Time.deltaTime;
+
+            if (_healTimer >= HealInterval)
+            {
+                HandleHeal();
+                _healTimer = 0f; 
+            }
         }
 
         public void RightClickHandle()

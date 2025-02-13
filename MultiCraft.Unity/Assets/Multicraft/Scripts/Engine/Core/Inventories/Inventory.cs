@@ -154,6 +154,8 @@ namespace MultiCraft.Scripts.Engine.Core.Inventories
             if (Slots[HotBarSelectedSlot].Amount == 0)
             {
                 Slots[HotBarSelectedSlot].Item = null;
+                Slots[HotBarSelectedSlot] = null;
+                
             }
 
             UiManager.Instance.UpdateInventory(Slots);

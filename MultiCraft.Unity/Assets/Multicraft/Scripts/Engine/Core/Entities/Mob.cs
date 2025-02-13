@@ -16,21 +16,21 @@ namespace MultiCraft.Scripts.Engine.Core.Entities
         public MobDrop drop;
 
         public float maxMoveSpeed = 2f;
-        public float moveSpeed = 2f; // Скорость движения
-        public float jumpForce = 5f; // Сила прыжка
-        public float detectionRange = 2f; // Дальность обнаружения препятствий
-        public LayerMask obstacleLayer; // Слой для препятствий
-        public float rotationSpeed = 5f; // Скорость поворота
-        public float minMoveDistance = 3f; // Минимальное расстояние, которое пройдет моб
-        public float maxMoveDistance = 10f; // Максимальное расстояние, которое пройдет моб
-        public float minStopDuration = 2f; // Время остановки в секундах
-        public float maxStopDuration = 15f; // Время остановки в секундах
+        public float moveSpeed = 2f;
+        public float jumpForce = 5f;
+        public float detectionRange = 2f;
+        public LayerMask obstacleLayer;
+        public float rotationSpeed = 5f; 
+        public float minMoveDistance = 3f;
+        public float maxMoveDistance = 10f;
+        public float minStopDuration = 2f;
+        public float maxStopDuration = 15f;
 
-        private Vector3 _targetDirection; // Направление движения
+        private Vector3 _targetDirection; 
         private Rigidbody _rigidbody;
-        private bool _isGrounded; // Флаг, находится ли объект на земле
-        private bool _isMoving = true; // Флаг, двигается ли моб
-        private float _remainingDistance; // Оставшееся расстояние до следующей остановки
+        private bool _isGrounded; 
+        private bool _isMoving = true; 
+        private float _remainingDistance;
         private MeshRenderer _meshRenderer;
 
         private void Start()
@@ -58,40 +58,32 @@ namespace MultiCraft.Scripts.Engine.Core.Entities
                 Destroy(gameObject);
             }
 
-            // Точка, куда моб планирует переместиться
-            Vector3 plannedPosition = transform.position + _targetDirection * moveSpeed * Time.deltaTime;
+            Vector3 plannedPosition = transform.position + _targetDirection * (moveSpeed * Time.deltaTime);
 
-            // Проверка, есть ли платформа под планируемой точкой
             if (!Physics.Raycast(plannedPosition, Vector3.down, detectionRange, obstacleLayer))
             {
-                SetRandomDirection(); // Сменить направление
-                return; // Прекратить текущий цикл движения
+                SetRandomDirection(); 
+                return; 
             }
 
-            // Проверка, нужно ли сменить направление
             if (Physics.Raycast(transform.position, _targetDirection, detectionRange, obstacleLayer))
             {
                 if (IsObstacleClimbable())
                 {
-                    Jump(); // Прыжок на препятствие
+                    Jump(); 
                 }
                 else
                 {
-                    SetRandomDirection(); // Сменить направление
+                    SetRandomDirection(); 
                 }
             }
-
-            // Движение
-            Vector3 move = _targetDirection * moveSpeed * Time.deltaTime;
+            Vector3 move = _targetDirection * (moveSpeed * Time.deltaTime);
             transform.position += new Vector3(move.x, 0, move.z);
 
-            // Уменьшение оставшегося расстояния
             _remainingDistance -= moveSpeed * Time.deltaTime;
 
-            // Поворот в сторону движения
             RotateTowards(_targetDirection);
 
-            // Если расстояние пройдено, остановка
             if (_remainingDistance <= 0)
             {
                 StopMovement();
@@ -109,7 +101,6 @@ namespace MultiCraft.Scripts.Engine.Core.Entities
 
         private void SetRandomDirection()
         {
-            // Генерация случайного направления
             _targetDirection = new Vector3(
                 Random.Range(-1f, 1f),
                 0,
@@ -172,12 +163,9 @@ namespace MultiCraft.Scripts.Engine.Core.Entities
             {
                 if (!_isMoving)
                 {
-                    yield return null; // Ждем, пока моб стоит
                 }
-                else
-                {
-                    yield return null; // Ждем следующий кадр, пока идет движение
-                }
+
+                yield return null; 
             }
         }
 
@@ -186,10 +174,7 @@ namespace MultiCraft.Scripts.Engine.Core.Entities
             var material = _meshRenderer.material;
             health = Mathf.Clamp(health - damage, 0, maxHealth);
             material.color = Color.red;
-            yield return new WaitForSeconds(0.2f);
-            StartCoroutine(StopRoutine());
-            moveSpeed *= 2;
-            Move();
+            yield return new WaitForSeconds(0.2f); 
             material.color = Color.white;
             if (health <= 0)
             {

@@ -43,7 +43,6 @@ namespace MultiCraft.Scripts.Engine.Core.HealthSystem
 
         private IEnumerator ColorRes()
         {
-            
             var material = meshRenderer.material;
             material.color = Color.red;
             yield return new WaitForSeconds(0.1f);

@@ -681,8 +681,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHunger: 10
   hunger: 10
-  hungerDecreaseRate: 0.1
-  hungerDecreaseTime: 1
+  hungerDecreaseRate: 1
+  hungerDecreaseTime: 180
 --- !u!114 &7853180868546638781
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -160,6 +160,15 @@ namespace MultiCraft.Scripts.Engine.Utils.Commands
         {
             var message = Instantiate(logMessageTextPrefab, logsContainer);
             message.text = log;
+            message.transform.SetAsFirstSibling();
+        }
+        
+        public void PrintLog(string log, Color color)
+        {
+            var message = Instantiate(logMessageTextPrefab, logsContainer);
+            message.text = log;
+            message.color = color;
+            message.transform.SetAsFirstSibling();
         }
     }
 }
