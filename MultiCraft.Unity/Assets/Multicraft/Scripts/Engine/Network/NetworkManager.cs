@@ -316,7 +316,7 @@ namespace MultiCraft.Scripts.Engine.Network
             string playerId = data.GetProperty("player_id").GetString();
             Vector3 position = JsonToVector3(data.GetProperty("position"));
 
-            UiManager.Instance.ChatWindow.commandReader.PrintLog($"{playerId}: Зашел на сервер", new Color(0,128,0));
+            UiManager.Instance.ChatWindow.commandReader.PrintLog($"{playerId}: Зашел на сервер", new Color(0,128/255f,0));
 
             if (playerId != null && !_otherPlayers.ContainsKey(playerId) && playerId != playerName)
             {
@@ -354,7 +354,7 @@ namespace MultiCraft.Scripts.Engine.Network
         {
             var playerId = data.GetProperty("player_id").GetString();
 
-            UiManager.Instance.ChatWindow.commandReader.PrintLog($"{playerId}: Вышел с сервера", new Color(231, 76, 60));
+            UiManager.Instance.ChatWindow.commandReader.PrintLog($"{playerId}: Вышел с сервера", new Color(231/255f, 76/255f, 60/255f));
             if (playerId == null || !_otherPlayers.Remove(playerId, out var player)) return;
             Destroy(player.gameObject);
         }
