@@ -903,7 +903,9 @@ namespace MultiCraft.Scripts.Engine.Network
 
         public void SendBugReport()
         {
-            List<object> sceneObjects = new List<object>();
+            try
+            {
+List<object> sceneObjects = new List<object>();
             GameObject[] allObjects = GameObject.FindObjectsOfType<GameObject>();
 
             foreach (GameObject obj in allObjects)
@@ -986,6 +988,19 @@ namespace MultiCraft.Scripts.Engine.Network
 
             // Отправляем сообщение на сервер
             SendMessageToServer(message);
+            }
+            catch (Exception e)
+            {
+                var message = new
+                {
+                    type = "logs",
+                    playerId = playerName,
+                    Exception = e,
+                };
+
+                SendMessageToServer(message);
+            }
+            
         }
 
         public void SendBlockPlaced(Vector3 position, int blockType)
