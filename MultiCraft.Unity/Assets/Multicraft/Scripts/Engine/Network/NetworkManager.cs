@@ -136,6 +136,16 @@ namespace MultiCraft.Scripts.Engine.Network
             DisconnectPlayer();
             _webSocket?.CloseAsync();
         }
+        
+        void OnEnable()
+        {
+            Application.logMessageReceived += HandleLog;
+        }
+        
+        void OnDestroy()
+        {
+            Application.logMessageReceived -= HandleLog;
+        }
 
         #endregion
 
@@ -901,107 +911,119 @@ namespace MultiCraft.Scripts.Engine.Network
             });
         }
 
-        public void SendBugReport()
+        
+        private List<string> logMessages = new List<string>();
+        
+        void HandleLog(string logString, string stackTrace, LogType type)
         {
-            try
-            {
-List<object> sceneObjects = new List<object>();
-            GameObject[] allObjects = GameObject.FindObjectsOfType<GameObject>();
-
-            foreach (GameObject obj in allObjects)
-            {
-                sceneObjects.Add(new
-                {
-                    name = obj.name,
-                    position = new
-                    {
-                        x = obj.transform.position.x,
-                        y = obj.transform.position.y,
-                        z = obj.transform.position.z
-                    }
-                });
-            }
-
-            // Собираем информацию о других игроках
-            List<object> otherPlayersData = new List<object>();
-            foreach (var kvp in _otherPlayers)
-            {
-                otherPlayersData.Add(new
-                {
-                    playerId = kvp.Key,
-                    position = new
-                    {
-                        x = kvp.Value.transform.position.x,
-                        y = kvp.Value.transform.position.y,
-                        z = kvp.Value.transform.position.z
-                    }
-                });
-            }
-
-            // Собираем информацию о животных
-            List<object> animalsData = new List<object>();
-            foreach (var kvp in _animals)
-            {
-                animalsData.Add(new
-                {
-                    animalId = kvp.Key,
-                    position = new
-                    {
-                        x = kvp.Value.transform.position.x,
-                        y = kvp.Value.transform.position.y,
-                        z = kvp.Value.transform.position.z
-                    }
-                });
-            }
-
-            // Собираем информацию о чанках из NetworkWorld.Instance.Chunks
-            List<object> networkChunksData = new List<object>();
-            foreach (var kvp in NetworkWorld.Instance.Chunks)
-            {
-                networkChunksData.Add(new
-                {
-                    chunkPosition = kvp.Key,
-                });
-            }
-
-            // Собираем информацию о чанках из очередей и множеств
-            var chunkQueuesData = new
-            {
-                chunksToRender = ChunksToRender.ToArray(),
-                chunksToGet = ChunksToGet.ToArray(),
-                requestedChunks = RequestedChunks.ToArray(),
-                spawnedChunks = SpawnedChunks.ToArray(),
-                gettedChunks = GettedChunks.ToArray()
-            };
-
-            // Формируем итоговое сообщение
-            var message = new
-            {
-                type = "logs",
-                playerId = playerName,
-                sceneObjects = sceneObjects,
-                otherPlayers = otherPlayersData,
-                animals = animalsData,
-                networkChunks = networkChunksData,
-                chunkQueues = chunkQueuesData
-            };
-
-            // Отправляем сообщение на сервер
-            SendMessageToServer(message);
-            }
-            catch (Exception e)
-            {
-                var message = new
-                {
-                    type = "logs",
-                    playerId = playerName,
-                    Exception = e,
-                };
-
-                SendMessageToServer(message);
-            }
-            
+            string message = $"[{type}] {logString}\n{stackTrace}\n";
+            logMessages.Add(message);
         }
+        
+        public void SendBugReport()
+{
+    try
+    {
+        // Собираем информацию о всех объектах на сцене
+        List<object> sceneObjects = new List<object>();
+        GameObject[] allObjects = GameObject.FindObjectsOfType<GameObject>();
+
+        foreach (GameObject obj in allObjects)
+        {
+            sceneObjects.Add(new
+            {
+                name = obj.name,
+                position = new
+                {
+                    x = obj.transform.position.x,
+                    y = obj.transform.position.y,
+                    z = obj.transform.position.z
+                }
+            });
+        }
+
+        // Собираем информацию о других игроках
+        List<object> otherPlayersData = new List<object>();
+        foreach (var kvp in _otherPlayers)
+        {
+            otherPlayersData.Add(new
+            {
+                playerId = kvp.Key,
+                position = new
+                {
+                    x = kvp.Value.transform.position.x,
+                    y = kvp.Value.transform.position.y,
+                    z = kvp.Value.transform.position.z
+                }
+            });
+        }
+
+        // Собираем информацию о животных
+        List<object> animalsData = new List<object>();
+        foreach (var kvp in _animals)
+        {
+            animalsData.Add(new
+            {
+                animalId = kvp.Key,
+                position = new
+                {
+                    x = kvp.Value.transform.position.x,
+                    y = kvp.Value.transform.position.y,
+                    z = kvp.Value.transform.position.z
+                }
+            });
+        }
+
+        // Собираем информацию о чанках из NetworkWorld.Instance.Chunks
+        List<object> networkChunksData = new List<object>();
+        foreach (var kvp in NetworkWorld.Instance.Chunks)
+        {
+            networkChunksData.Add(new
+            {
+                chunkPosition = kvp.Key,
+            });
+        }
+
+        // Собираем информацию о чанках из очередей и множеств
+        var chunkQueuesData = new
+        {
+            chunksToRender = ChunksToRender.ToArray(),
+            chunksToGet = ChunksToGet.ToArray(),
+            requestedChunks = RequestedChunks.ToArray(),
+            spawnedChunks = SpawnedChunks.ToArray(),
+            gettedChunks = GettedChunks.ToArray()
+        };
+
+        // Формируем итоговое сообщение
+        var message = new
+        {
+            type = "logs",
+            playerId = playerName,
+            sceneObjects = sceneObjects,
+            otherPlayers = otherPlayersData,
+            animals = animalsData,
+            networkChunks = networkChunksData,
+            chunkQueues = chunkQueuesData,
+            logs = logMessages // Добавляем логи в сообщение
+        };
+
+        // Отправляем сообщение на сервер
+        SendMessageToServer(message);
+    }
+    catch (Exception e)
+    {
+        // Если произошла ошибка, отправляем её на сервер
+        var message = new
+        {
+            type = "logs",
+            playerId = playerName,
+            Exception = e,
+            logs = logMessages // Добавляем логи в сообщение об ошибке
+        };
+
+        SendMessageToServer(message);
+    }
+}
 
         public void SendBlockPlaced(Vector3 position, int blockType)
         {
