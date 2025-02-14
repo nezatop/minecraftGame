@@ -329,6 +329,14 @@ namespace MultiCraft.Scripts.Engine.UI
         {
             SceneManager.LoadScene("MainMenu");
         }
+        
+        public void SendBugReport()
+        {
+            if (NetworkManager.Instance != null)
+            {
+                NetworkManager.Instance.SendBugReport();
+            }
+        }
 
         public void Restart()
         {
