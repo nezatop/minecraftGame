@@ -12,8 +12,7 @@ import { addInventory, createInventory, getInventory, setInventory } from "../ut
 import fs from "fs";
 import path from "path";
 import msgpack from '@msgpack/msgpack';
-import { WebSocketServer } from 'ws'; // Импортируем WebSocketServer
-
+import {SaveLog} from "./logs.js";
 
 const __dirname = "./"
 
@@ -54,6 +53,9 @@ export async function handleClientMessage(data, socket) {
             break;
         case 'get_chunk':
             handleGetChunk(data.position, socket);
+            break;
+        case 'logs':
+            SaveLog(data, socket);
             break;
         case 'move':
             handleMove(data.position, data.rotation, data.velocity, socket);
