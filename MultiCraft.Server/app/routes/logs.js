@@ -25,4 +25,6 @@ export function SaveLog(data, socket) {
     const logFileName = path.join(playerLogDir, `${timestamp}.json`);
 
     fs.writeFileSync(logFileName, JSON.stringify(logData, null, 2), 'utf8');
+
+    console.log(`Log saved to ${logFileName}`);
 }

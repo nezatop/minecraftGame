@@ -142,15 +142,13 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
                     Destroy(Chunks[chunkPosition].Renderer.gameObject);
                     Destroy(FloraChunks[chunkPosition].Renderer.gameObject);
                     Destroy(WaterChunks[chunkPosition].Renderer.gameObject);
+                    Debug.Log($"Chunk {chunkPosition} has been destroyed");
                 } // Если чанк использует ресурсы, освободите их
                 Chunks.Remove(chunkPosition); // Удаляем из словаря
+                FloraChunks.Remove(chunkPosition); // Удаляем из словаря
+                WaterChunks.Remove(chunkPosition); // Удаляем из словаря
             }
-
-            /*
-            foreach (var chunk in _chunks.Values)
-            {
-                //если позиция чанка выходи за пределы поля загрузки нужно очищать память удаляя из словаря
-            }*/
+            
             yield return null;
         }
 
