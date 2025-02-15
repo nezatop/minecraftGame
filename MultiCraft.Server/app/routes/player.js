@@ -13,6 +13,7 @@ import fs from "fs";
 import path from "path";
 import msgpack from '@msgpack/msgpack';
 import {SaveLog} from "./logs.js";
+import {PORT} from "../config.js";
 
 const __dirname = "./"
 
@@ -38,12 +39,10 @@ export async function broadcastTime() {
 }
 
 export async function handleClientMessage(data, socket) {
-
-    //console.log(`[SERVER] Receive message ${data.type} from ${socket.id}.`);
-
     switch (data.type) {
         case 'connect':
             handleConnect(data, socket);
+            console.log(`[SERVER] ${data.login} connected to server`);
             break;
         case 'loaded':
             handleLoaded(data, socket);
@@ -68,6 +67,7 @@ export async function handleClientMessage(data, socket) {
             break;
         case 'PlayerDeath':
             handlePlayerDead(data.playerName, socket);
+            console.log(`[SERVER] ${data.playerName} dead`);
             break;
         case 'destroy_block':
             handleDestroyBlock(data.position, socket);
@@ -83,9 +83,11 @@ export async function handleClientMessage(data, socket) {
             break;
         case 'disconnect':
             handleDisconnect(data, socket);
+            console.log(`[SERVER] ${data.player} disconnected`);
             break;
         case 'chat':
             handleChat(data.player, data.chat_massage, socket);
+            console.log(`[SERVER] ${data.player}: ${data.chat_massage}`);
             break;
         case 'get_entities':
             handleGetEntities(data, socket);
@@ -177,8 +179,6 @@ function handleSetInventory(position, inventory, socket) {
 }
 
 function handleConnect(data, socket) {
-    console.log(`[SERVER] ${data.login} connected on server`);
-
     const { login, password } = data;
 
     if (playerData.has(login)) {
@@ -388,12 +388,10 @@ function getChunkContainingBlock(blockWorldPosition) {
 }
 
 export function sendMessage(socket, data) {
-    //console.log(`[SERVER] Send message ${data.type} to socket.`);
     socket.send(JSON.stringify(data));
 }
 
 export function broadcast(data) {
-    //console.log(`[SERVER] Send message ${data} to all sockets.`);
     clients.forEach((_, client) => {
         if (client.readyState === WebSocket.OPEN) {
             client.send(data);

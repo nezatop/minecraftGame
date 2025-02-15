@@ -175,14 +175,12 @@ namespace MultiCraft.Scripts.Engine.Network.Player
             var Mob = hitObject.GetComponent<Mob>();
             if (Mob != null)
             {
-                Debug.Log($"Hit object: {hitObject.name}");
                 StartCoroutine(Mob.TakeDamage(damage, -hitInfo.normal));
             }
 
             var otherPlayer = hitObject.GetComponent<OtherNetPlayer>();
             if (otherPlayer != null)
             {
-                Debug.Log($"Hit object: {hitObject.name}");
                 otherPlayer.health.TakeDamage(damage);
                 NetworkManager.Instance.ServerMassageAttack(damage, otherPlayer.playerName);
             }

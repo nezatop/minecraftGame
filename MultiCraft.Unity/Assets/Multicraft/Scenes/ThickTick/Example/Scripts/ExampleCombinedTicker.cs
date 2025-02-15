@@ -12,7 +12,6 @@ namespace ThickTick.Example.Scripts
         private void Start()
         {
             _ticker = CombinedTicker.Create(_isUnscaled);
-            Debug.Log($"Combined ticker is created. Is unscaled: {_isUnscaled}...");
             
             _ticker.OnFrameTick += OnFrameTick;
             _ticker.OnSecondTick += OnSecondTick;

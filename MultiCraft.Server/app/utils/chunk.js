@@ -80,7 +80,6 @@ export function generateAnimals(blocks, offsetX, offsetY, offsetZ) {
 
 export function loadAnimalsFromFile(filename) {
     if (!fs.existsSync(filename)) {
-        console.log(`File ${filename} does not exist.`);
         return new Map();
     }
 
@@ -94,7 +93,6 @@ export function loadAnimalsFromFile(filename) {
         entities.set(animal.id, animal);
     });
 
-    console.log(`Animals loaded from ${filename}`);
     return entities;
 }
 
@@ -104,7 +102,6 @@ export function saveAnimalsToFile(filename, entities) {
 
     // Сохраняем данные в файл
     fs.writeFileSync(filename, JSON.stringify(animalsArray, null, 2), 'utf-8');
-    console.log(`Animals saved to ${filename}`);
 }
 
 function findSurfaceHeight(chunk, x, z) {

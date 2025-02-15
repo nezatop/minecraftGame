@@ -45,7 +45,6 @@ namespace Multicraft.Scripts.Engine.Core.Hunger
             hunger += foodValue;
             hunger = Mathf.Clamp(hunger, 0, maxHunger);
             onHungerChanged?.Invoke((int)hunger);
-            Debug.Log($"Ate food, hunger restored by {foodValue}. Current hunger: {hunger}");
         }
 
         public void ResetHunger()

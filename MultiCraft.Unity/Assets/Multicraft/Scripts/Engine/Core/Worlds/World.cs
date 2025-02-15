@@ -125,7 +125,6 @@ namespace MultiCraft.Scripts.Engine.Core.Worlds
             }
 
             SpawnStructure(structure, pos);
-            Debug.Log($"Структура {randomStructureName} успешно размещена в позиции {pos}");
         }
 
         private bool IsWithinChunkBounds(Vector3Int position, int[,,] structure)

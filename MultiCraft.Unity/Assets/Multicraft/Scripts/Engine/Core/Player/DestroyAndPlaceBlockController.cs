@@ -180,9 +180,6 @@ namespace MultiCraft.Scripts.Engine.Core.Player
             if (!Physics.Raycast(transform.position, transform.forward, out var hitInfo, 5f, mobLayer)) return false;
             GameObject hitObject = hitInfo.collider.gameObject;
 
-            // Выводим информацию о попадании
-            Debug.Log($"Hit object: {hitObject.name}");
-
             // Здесь можно добавить логику атаки, если объект является мобом или врагом
             // Например:
             var Mob = hitObject.GetComponent<Mob>();

@@ -56,6 +56,8 @@ namespace MultiCraft.Scripts.Engine.Network
         public HashSet<Vector3Int> SpawnedChunks;
         public HashSet<Vector3Int> GettedChunks;
         private int _requestedChunks = 0;
+        
+        public bool StartChunksLoaded = false;
 
         public bool canSpawnPlayer;
 
@@ -141,11 +143,6 @@ namespace MultiCraft.Scripts.Engine.Network
         {
             Application.logMessageReceived += HandleLog;
         }
-        
-        void OnDestroy()
-        {
-            Application.logMessageReceived -= HandleLog;
-        }
 
         #endregion
 
@@ -202,9 +199,10 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void OnDestroy()
         {
-            _webSocket.CloseAsync();
+            Application.logMessageReceived -= HandleLog;
             if (_playerController)
                 _playerController.health.OnDeath -= OpenDeadMenu;
+            _webSocket.CloseAsync();
         }
 
         public IEnumerator DestroyChunk(Vector3Int chunkPosition)
@@ -223,13 +221,13 @@ namespace MultiCraft.Scripts.Engine.Network
             {
                 var message = JsonDocument.Parse(data);
                 var type = message.RootElement.GetProperty("type").GetString();
-
-                LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
+                
                 switch (type)
                 {
                     case "connected":
                         OnConnected(message.RootElement);
                         SendMessageToServer(new { type = "get_players" });
+                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "time":
@@ -238,10 +236,12 @@ namespace MultiCraft.Scripts.Engine.Network
 
                     case "damage":
                         HandleDamage(message.RootElement);
+                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "player_connected":
                         OnPlayerConnected(message.RootElement);
+                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "player_moved":
@@ -250,22 +250,27 @@ namespace MultiCraft.Scripts.Engine.Network
 
                     case "player_disconnected":
                         OnPlayerDisconnected(message.RootElement);
+                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "players_list":
                         OnPlayersListReceived(message.RootElement);
+                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "player_dead":
                         OnPlayerDead(message.RootElement);
+                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "Player_respawn":
                         OnPlayerRespawn(message.RootElement);
+                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "chunk_data":
                         StartCoroutine(HandleChunkData(message.RootElement));
+                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "player_update":
@@ -274,6 +279,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
                     case "block_update":
                         HandleBlockUpdate(message.RootElement);
+                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "inventory":
@@ -693,8 +699,12 @@ namespace MultiCraft.Scripts.Engine.Network
                 login = playerName,
             });
 
+            
+            StartChunksLoaded = true;
+            
             StartCoroutine(SendPlayerPositionRepeatedly());
         }
+
 
         private void OpenDeadMenu(GameObject deadPlayer)
         {
@@ -1067,8 +1077,24 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void SendMessageToServer(object message)
         {
+            var messageTypeProperty = message.GetType().GetProperty("type");
+            string messageType = messageTypeProperty?.GetValue(message)?.ToString();
+            
             string jsonMessage = JsonSerializer.Serialize(message);
-            Debug.Log(jsonMessage);
+            switch (messageType)
+            {
+                case "move":
+                    break;
+                case "logs":
+                    break;
+                case "drop_inventory":
+                    break;
+                case "set_inventory":
+                    break;
+                default:
+                    LogDebug(jsonMessage);
+                    break;
+            }
             _webSocket.SendAsync(Encoding.UTF8.GetBytes(jsonMessage));
         }
 

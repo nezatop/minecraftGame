@@ -22,7 +22,6 @@ namespace MultiCraft.Scripts.Engine.Core.Inventories
 
         private void Update()
         {
-            Debug.Log(HotBarSelectedSlot);
             if (UiManager.Instance.inventoryUpdated == true)
             {
                 Slots = InventoryWindow.Instance.InventoryController.GetInv();

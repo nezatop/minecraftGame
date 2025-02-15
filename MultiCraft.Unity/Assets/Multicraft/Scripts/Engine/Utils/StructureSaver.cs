@@ -62,7 +62,6 @@ namespace MultiCraft.Scripts.Engine.Utils
                     new Serializable3DArray(serializableData, structureName,
                         new Vector3Int(blocks.GetLength(0), blocks.GetLength(1), blocks.GetLength(2))), true);
 
-            Debug.Log($"Сериализованные данные: {json}");
 
             string folderPath = Path.Combine(Application.dataPath, "Resources/Structures");
 
@@ -74,7 +73,6 @@ namespace MultiCraft.Scripts.Engine.Utils
             string filePath = Path.Combine(folderPath, structureName + ".json");
             File.WriteAllText(filePath, json);
 
-            Debug.Log($"Файл сохранён в папку Resources: {filePath}");
             return filePath;
         }
 

@@ -31,8 +31,6 @@ namespace MultiCraft.Scripts.UI.Authorize
         public IEnumerator SendChangeDataRequest(UserDataUpdate updatedUserData)
         {
             string jsonData = JsonUtility.ToJson(updatedUserData);
-            Debug.Log("Отправляем JSON: " + jsonData);
-
             using (UnityWebRequest www =
                    new UnityWebRequest("https://bloxter.fun:8081/edit-username-password", "PUT"))
             {

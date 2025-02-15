@@ -33,7 +33,6 @@ namespace MultiCraft.Scripts.UI.Authorize
         private IEnumerator SendRegisterRequest(UserData userData)
         {
             string jsonData = JsonUtility.ToJson(userData);
-            Debug.Log("Отправляем JSON: " + jsonData); // Проверка JSON
             using (UnityWebRequest www =
                    new UnityWebRequest("https://bloxter.fun:8081/register", "POST"))
             {
@@ -59,7 +58,6 @@ namespace MultiCraft.Scripts.UI.Authorize
         
         private void RegisterSuccess()
         {
-            Debug.Log("Пользователь успешно авторизован.");
             OnRegisterSuccess?.Invoke();
         }
     }

@@ -298,10 +298,9 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
             var playerChunkPosition = GetChunkContainBlock(currentPosition);
             if (chunkDict.TryGetValue(position, out var chunk))
             {
+                SetChunkNeighbors(chunk, chunkDict);
                 if (IsWithinViewDistance(playerChunkPosition, chunk.Position))
                 {
-                    SetChunkNeighbors(chunk, chunkDict);
-
                     chunk.State = ChunkState.MeshBuilding;
                     var mesh = MeshBuilder.GenerateMesh(chunk);
                     chunk.State = ChunkState.Loaded;

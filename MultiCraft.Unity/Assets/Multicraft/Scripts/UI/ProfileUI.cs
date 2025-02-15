@@ -43,9 +43,6 @@ namespace MultiCraft.Scripts.UI
             // Сохраняем JSON-строку в PlayerPrefs
             PlayerPrefs.SetString("UserData", jsonData);
             PlayerPrefs.Save();
-
-            // Выводим для проверки
-            Debug.Log($"UserData сохранено: {jsonData}");
             Auth = true;
         }
 

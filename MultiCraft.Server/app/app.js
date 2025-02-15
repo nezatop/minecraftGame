@@ -56,7 +56,6 @@ setInterval(broadcastTime, 250);
 wss.on('connection', (socket) => {
     socket.on('message', (message) => {
         try {
-
             const data = JSON.parse(message);
             handleClientMessage(data, socket);
         } catch (error) {

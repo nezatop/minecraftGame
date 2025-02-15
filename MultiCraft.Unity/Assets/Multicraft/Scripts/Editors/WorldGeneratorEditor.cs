@@ -56,8 +56,6 @@ namespace MultiCraft.Scripts.Editors
 
             // Перезагружаем ассет в Unity, чтобы изменения были применены сразу
             AssetDatabase.Refresh();
-
-            Debug.Log("Settings saved to " + path);
         }
     }
 

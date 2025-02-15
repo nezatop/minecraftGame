@@ -73,9 +73,6 @@ namespace MultiCraft.Scripts.UI
             // Сохраняем JSON-строку в PlayerPrefs
             PlayerPrefs.SetString("settings", jsonData);
             PlayerPrefs.Save();
-
-            // Выводим для проверки
-            Debug.Log($"settings сохранено: {jsonData}");
         }
         
         private void SetMasterVolume(float volume)
