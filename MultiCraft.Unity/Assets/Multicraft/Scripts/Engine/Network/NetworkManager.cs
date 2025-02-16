@@ -171,11 +171,13 @@ namespace MultiCraft.Scripts.Engine.Network
 
             if (ChunksToRender.TryDequeue(out chunkPosition))
             {
+                
                 if (SpawnedChunks.Contains(chunkPosition + Vector3Int.left) &&
                     SpawnedChunks.Contains(chunkPosition + Vector3Int.right) &&
                     SpawnedChunks.Contains(chunkPosition + Vector3Int.forward) &&
                     SpawnedChunks.Contains(chunkPosition + Vector3Int.back))
                 {
+                    Debug.Log($"[Client] Chunk rendered: {chunkPosition}");
                     StartCoroutine(NetworkWorld.Instance.RenderChunks(chunkPosition));
                     StartCoroutine(NetworkWorld.Instance.RenderWaterChunks(chunkPosition));
                     StartCoroutine(NetworkWorld.Instance.RenderFloraChunks(chunkPosition));
@@ -227,7 +229,6 @@ namespace MultiCraft.Scripts.Engine.Network
                     case "connected":
                         OnConnected(message.RootElement);
                         SendMessageToServer(new { type = "get_players" });
-                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "time":
@@ -236,12 +237,10 @@ namespace MultiCraft.Scripts.Engine.Network
 
                     case "damage":
                         HandleDamage(message.RootElement);
-                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "player_connected":
                         OnPlayerConnected(message.RootElement);
-                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "player_moved":
@@ -250,27 +249,22 @@ namespace MultiCraft.Scripts.Engine.Network
 
                     case "player_disconnected":
                         OnPlayerDisconnected(message.RootElement);
-                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "players_list":
                         OnPlayersListReceived(message.RootElement);
-                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "player_dead":
                         OnPlayerDead(message.RootElement);
-                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "Player_respawn":
                         OnPlayerRespawn(message.RootElement);
-                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "chunk_data":
                         StartCoroutine(HandleChunkData(message.RootElement));
-                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "player_update":
@@ -279,7 +273,6 @@ namespace MultiCraft.Scripts.Engine.Network
 
                     case "block_update":
                         HandleBlockUpdate(message.RootElement);
-                        LogDebug($"[MassageFromServer] {message.RootElement.ToString()}");
                         break;
 
                     case "inventory":
@@ -336,6 +329,8 @@ namespace MultiCraft.Scripts.Engine.Network
             string playerId = data.GetProperty("player_id").GetString();
             Vector3 position = JsonToVector3(data.GetProperty("position"));
 
+            LogDebug($"[MassageFromServer] Player Connected {playerId}");
+
             UiManager.Instance.ChatWindow.commandReader.PrintLog($"{playerId}: Зашел на сервер",
                 new Color(0, 255 / 255f, 0));
 
@@ -375,6 +370,7 @@ namespace MultiCraft.Scripts.Engine.Network
         {
             var playerId = data.GetProperty("player_id").GetString();
 
+            LogDebug($"[MassageFromServer] Player Disconnected {playerId}");
             UiManager.Instance.ChatWindow.commandReader.PrintLog($"{playerId}: Вышел с сервера",
                 new Color(231 / 255f, 76 / 255f, 60 / 255f));
             if (playerId == null || !_otherPlayers.Remove(playerId, out var player)) return;
@@ -548,8 +544,7 @@ namespace MultiCraft.Scripts.Engine.Network
         {
             Vector3Int chunkCoord = JsonToVector3Int(data.GetProperty("position"));
 
-            if (!GettedChunks.Add(chunkCoord))
-                yield break;
+            LogDebug($"[Client] Get Chunk at position {chunkCoord} from server.");
 
             int[,,] blocks = null;
             int[,,] waterBlocks = null;
@@ -559,15 +554,14 @@ namespace MultiCraft.Scripts.Engine.Network
             JsonElement waterBlocksJson = data.GetProperty("waterChunk");
             JsonElement floraBlocksJson = data.GetProperty("floraChunk");
 
-            // Генерация блоков
             yield return StartCoroutine(Blocks(blocksJson, result => blocks = result));
             yield return StartCoroutine(Blocks(waterBlocksJson, result => waterBlocks = result));
             yield return StartCoroutine(Blocks(floraBlocksJson, result => floraBlocks = result));
-
-            // Запуск корутин для спавна чанков
+            
             yield return NetworkWorld.Instance.SpawnChunk(chunkCoord, blocks);
             yield return NetworkWorld.Instance.SpawnWaterChunk(chunkCoord, waterBlocks);
             yield return NetworkWorld.Instance.SpawnFloraChunk(chunkCoord, floraBlocks);
+
             SpawnedChunks.Add(chunkCoord);
 
             if (_player)
@@ -930,7 +924,7 @@ namespace MultiCraft.Scripts.Engine.Network
             logMessages.Add(message);
         }
 
-        public void SendBugReport()
+        public void SendBugReport(string text)
         {
             try
             {
@@ -1011,6 +1005,7 @@ namespace MultiCraft.Scripts.Engine.Network
                 {
                     type = "logs",
                     playerId = playerName,
+                    BugReportText = text,
                     sceneObjects = sceneObjects,
                     otherPlayers = otherPlayersData,
                     animals = animalsData,
@@ -1028,6 +1023,7 @@ namespace MultiCraft.Scripts.Engine.Network
                 var message = new
                 {
                     type = "logs",
+                    BugReportText = text,
                     playerId = playerName,
                     Exception = e,
                     ExceptionMessage = e.Message,
@@ -1081,28 +1077,6 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void SendMessageToServer(object message)
         {
-            /*var messageTypeProperty = message.GetType().GetProperty("type");
-            if (messageTypeProperty == null)
-            {
-                LogDebug("Сообщение не содержит свойства 'type'.");
-                return;
-            }
-            string messageType = messageTypeProperty.GetValue(message)?.ToString();
-
-            switch (messageType)
-            {
-                case "move":
-                    break;
-                case "logs":
-                    break;
-                case "drop_inventory":
-                    break;
-                case "set_inventory":
-                    break;
-                default:
-                    LogDebug(message);
-                    break;
-            }*/
             string jsonMessage = JsonSerializer.Serialize(message);
             _webSocket.SendAsync(Encoding.UTF8.GetBytes(jsonMessage));
         }

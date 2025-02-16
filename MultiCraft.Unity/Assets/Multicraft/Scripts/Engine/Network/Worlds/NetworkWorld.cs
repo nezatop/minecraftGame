@@ -88,7 +88,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
             ChunkRenderer.InitializeTriangles();
             DropItemRenderer.InitializeTriangles();
             HandRenderer.InitializeTriangles();
-            
+
             if (PlayerPrefs.HasKey("RenderDistance"))
             {
                 var renderDistance = PlayerPrefs.GetFloat("RenderDistance");
@@ -105,7 +105,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
                 StartCoroutine(CheckPlayer());
 
             StartCoroutine(SpawnChunks());
-            StartCoroutine(DispawnChunks());
+            //StartCoroutine(DispawnChunks());
         }
 
         #endregion
@@ -117,7 +117,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
             List<Vector3Int> chunksToRemove = new List<Vector3Int>();
 
             var positions = GetChunkContainBlock(currentPosition);
-            
+
             foreach (var chunkEntry in Chunks)
             {
                 Vector3Int chunkPosition = chunkEntry.Key;
@@ -137,18 +137,18 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
             foreach (var chunkPosition in chunksToRemove)
             {
                 StartCoroutine(NetworkManager.Instance.DestroyChunk(chunkPosition));
-                if(Chunks[chunkPosition].Renderer)
+                if (Chunks[chunkPosition].Renderer)
                 {
                     Destroy(Chunks[chunkPosition].Renderer.gameObject);
                     Destroy(FloraChunks[chunkPosition].Renderer.gameObject);
                     Destroy(WaterChunks[chunkPosition].Renderer.gameObject);
                     Debug.Log($"Chunk {chunkPosition} has been destroyed");
+                    Chunks.Remove(chunkPosition); // Удаляем из словаря
+                    FloraChunks.Remove(chunkPosition); // Удаляем из словаря
+                    WaterChunks.Remove(chunkPosition); // Удаляем из словаря
                 } // Если чанк использует ресурсы, освободите их
-                Chunks.Remove(chunkPosition); // Удаляем из словаря
-                FloraChunks.Remove(chunkPosition); // Удаляем из словаря
-                WaterChunks.Remove(chunkPosition); // Удаляем из словаря
             }
-            
+
             yield return null;
         }
 
@@ -173,7 +173,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
             var chunkObject = Instantiate(prefab, new Vector3(xPos, yPos, zPos), Quaternion.identity, transform);
             mesh.Chunk.Renderer = chunkObject;
             mesh.Chunk.State = ChunkState.Active;
-            
+
             chunkObject.Chunk = mesh.Chunk;
             chunkObject.SetMesh(mesh);
 
@@ -185,14 +185,14 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
             if (Chunks.ContainsKey(position))
                 yield break;
 
+            Debug.Log($"Spawning Chunk {position}");
+
             Chunk chunk = new Chunk()
             {
                 Position = position,
                 Blocks = blocks,
                 State = ChunkState.Generated
             };
-
-            yield return null;
 
             Chunks.Add(position, chunk);
 
@@ -255,12 +255,17 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
                          z++)
                     {
                         var chunkPos = new Vector3Int(x, 0, z);
-                        if (Chunks.TryGetValue(chunkPos, out var chunk))
-                        {
-                            if (!chunk.Renderer && !NetworkManager.Instance.ChunksToRender.Contains(chunkPos))
-                                NetworkManager.Instance.ChunksToRender.Enqueue(chunkPos);
-                            continue;
-                        }
+                        if (chunkPos.x >= playerChunkPosition.x - settings.viewDistanceInChunks &&
+                            chunkPos.x <= playerChunkPosition.x + settings.viewDistanceInChunks &&
+                            chunkPos.z >= playerChunkPosition.z - settings.viewDistanceInChunks &&
+                            chunkPos.z <= playerChunkPosition.z + settings.viewDistanceInChunks
+                            )
+                            if (Chunks.TryGetValue(chunkPos, out var chunk))
+                            {
+                                if (!chunk.Renderer && !NetworkManager.Instance.ChunksToRender.Contains(chunkPos))
+                                    NetworkManager.Instance.ChunksToRender.Enqueue(chunkPos);
+                                continue;
+                            }
 
                         if (!NetworkManager.Instance.ChunksToGet.Contains(chunkPos))
                             NetworkManager.Instance.ChunksToGet.Enqueue(chunkPos);
@@ -299,11 +304,14 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
                 SetChunkNeighbors(chunk, chunkDict);
                 if (IsWithinViewDistance(playerChunkPosition, chunk.Position))
                 {
-                    chunk.State = ChunkState.MeshBuilding;
-                    var mesh = MeshBuilder.GenerateMesh(chunk);
-                    chunk.State = ChunkState.Loaded;
+                    if (chunk.State != ChunkState.Loaded)
+                    {
+                        chunk.State = ChunkState.MeshBuilding;
+                        var mesh = MeshBuilder.GenerateMesh(chunk);
+                        chunk.State = ChunkState.Loaded;
 
-                    meshingQueue.Enqueue(mesh);
+                        meshingQueue.Enqueue(mesh);
+                    }
                 }
             }
 

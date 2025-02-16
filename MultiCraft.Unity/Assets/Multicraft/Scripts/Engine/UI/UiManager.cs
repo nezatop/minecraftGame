@@ -9,6 +9,7 @@ using MultiCraft.Scripts.Engine.Core.Worlds;
 using MultiCraft.Scripts.Engine.Network;
 using MultiCraft.Scripts.Engine.Utils.Commands;
 using MultiCraft.Scripts.Engine.Utils.MulticraftDebug;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -23,6 +24,8 @@ namespace MultiCraft.Scripts.Engine.UI
         public InventoryWindow InventoryWindow;
         public ChatWindow ChatWindow;
         public GameObject LoadingScreen;
+        
+        public GameObject ReportScreen;
 
         public List<GameObject> MobileInputObjects;
 
@@ -149,12 +152,28 @@ namespace MultiCraft.Scripts.Engine.UI
 
         #endregion
 
+        #region Report
+
+        public void OpenReport()
+        {
+            ReportScreen.gameObject.SetActive(true);
+        }
+        
+        public void CloseReport()
+        {
+            ReportScreen.gameObject.SetActive(false);
+        }
+
+        
+        #endregion
+        
         #region Inventorty
 
         public bool OpenCloseInventory()
         {
             if (GameOverScreen.gameObject.activeSelf) return true;
             if (ChatWindow.gameObject.activeSelf) return true;
+            if (ReportScreen.gameObject.activeSelf) return true;
             CloseDead();
             CloseChat();
             ClosePause();
@@ -190,6 +209,7 @@ namespace MultiCraft.Scripts.Engine.UI
 
         public bool OpenCloseChat()
         {
+            if (ReportScreen.gameObject.activeSelf) return true;
             if (GameOverScreen.gameObject.activeSelf) return true;
             CloseChest();
             CloseDead();
@@ -259,6 +279,7 @@ namespace MultiCraft.Scripts.Engine.UI
         public bool OpenClosePause()
         {
             if (GameOverScreen.gameObject.activeSelf) return true;
+            if (ReportScreen.gameObject.activeSelf) return true;
             CloseInventory();
             CloseChest();
             CloseChat();
@@ -330,12 +351,13 @@ namespace MultiCraft.Scripts.Engine.UI
             SceneManager.LoadScene("MainMenu");
         }
         
-        public void SendBugReport()
+        public void SendBugReport(TMP_InputField inputField)
         {
             if (NetworkManager.Instance != null)
             {
-                NetworkManager.Instance.SendBugReport();
+                NetworkManager.Instance.SendBugReport(inputField.text);
             }
+            inputField.text = "";
         }
 
         public void Restart()
