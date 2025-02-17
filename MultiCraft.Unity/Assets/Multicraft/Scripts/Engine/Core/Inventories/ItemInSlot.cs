@@ -12,7 +12,8 @@ namespace MultiCraft.Scripts.Engine.Core.Inventories
         {
             Item = item;
             Amount = amount;
-            Durability = item.MaxDurability;
+            if(item != null)
+                Durability = item.MaxDurability;
         }
 
         public ItemInSlot()
@@ -30,14 +31,12 @@ namespace MultiCraft.Scripts.Engine.Core.Inventories
         public bool CanAdd(Item item)
         {
             if (Item == null) return false;
-            if (Amount < Item.MaxStackSize && Item.Name == item.Name) return true;
-            return false;
+            return Amount < Item.MaxStackSize && Item.Name == item.Name;
         }
 
         public bool CanAdd()
         {
-            if (Amount == 0) return true;
-            return false;
+            return Amount == 0;
         }
     }
 }

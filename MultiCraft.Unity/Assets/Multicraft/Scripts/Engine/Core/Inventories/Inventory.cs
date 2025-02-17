@@ -149,6 +149,7 @@ namespace MultiCraft.Scripts.Engine.Core.Inventories
         public ItemInSlot RemoveSelectedItem()
         {
             var item = Slots[HotBarSelectedSlot];
+            if(item == null) return null;
             Slots[HotBarSelectedSlot].Amount--;
             if (Slots[HotBarSelectedSlot].Amount == 0)
             {

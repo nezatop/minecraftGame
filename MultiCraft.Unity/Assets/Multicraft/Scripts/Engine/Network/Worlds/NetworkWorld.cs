@@ -105,7 +105,7 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
                 StartCoroutine(CheckPlayer());
 
             StartCoroutine(SpawnChunks());
-            //StartCoroutine(DispawnChunks());
+            StartCoroutine(DispawnChunks());
         }
 
         #endregion
@@ -142,7 +142,6 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
                     Destroy(Chunks[chunkPosition].Renderer.gameObject);
                     Destroy(FloraChunks[chunkPosition].Renderer.gameObject);
                     Destroy(WaterChunks[chunkPosition].Renderer.gameObject);
-                    Debug.Log($"Chunk {chunkPosition} has been destroyed");
                     Chunks.Remove(chunkPosition); // Удаляем из словаря
                     FloraChunks.Remove(chunkPosition); // Удаляем из словаря
                     WaterChunks.Remove(chunkPosition); // Удаляем из словаря
@@ -184,8 +183,6 @@ namespace MultiCraft.Scripts.Engine.Network.Worlds
         {
             if (Chunks.ContainsKey(position))
                 yield break;
-
-            Debug.Log($"Spawning Chunk {position}");
 
             Chunk chunk = new Chunk()
             {

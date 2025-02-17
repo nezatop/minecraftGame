@@ -320,7 +320,6 @@ namespace MultiCraft.Scripts.Engine.Core.Player
             }
 
             
-
             if (handItem != null)
             {
                 if (handItem.BlockType != null)
@@ -345,7 +344,9 @@ namespace MultiCraft.Scripts.Engine.Core.Player
 
             if (Input.GetKeyDown(KeyCode.Q))
             {
-                var item = inventory.RemoveSelectedItem().Item;
+                var item = inventory.GetSelectedItem()?.Item;
+                if (item == null) return;
+                inventory.RemoveSelectedItem();
                 var camera = transform.GetChild(0);
                 var droppedItem = Instantiate(droppedItemPrefab, camera.position + Vector3.down * 0.2f,
                     Quaternion.identity);

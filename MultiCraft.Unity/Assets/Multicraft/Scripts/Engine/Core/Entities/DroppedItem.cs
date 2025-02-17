@@ -20,7 +20,7 @@ namespace MultiCraft.Scripts.Engine.Core.Entities
         public void Init()
         {
             var itemRenderer = transform.GetChild(0).GetComponent<DropItemRenderer>();
-            
+
             if (Item.Item.Type == ItemType.Block)
             {
                 var block = ResourceLoader.Instance.GetBlock(Item.Item.BlockType.Id);
@@ -30,9 +30,8 @@ namespace MultiCraft.Scripts.Engine.Core.Entities
             else
             {
                 var item = Item.Item;
-                var itemMesh =  DropItemMeshBuilder.GeneratedMesh(item);
+                var itemMesh = DropItemMeshBuilder.GeneratedMesh(item);
                 itemRenderer.SetMesh(itemMesh);
-                
             }
         }
 
@@ -51,28 +50,19 @@ namespace MultiCraft.Scripts.Engine.Core.Entities
         private void OnTriggerStay(Collider other)
         {
             if (Time.time - _spawnTime <= delayTime) return;
-            /*
-            if (other.CompareTag("Player"))
-            {
-                if (other.GetComponent<Inventory>().AddItem(Item))
-                {
-                    Destroy(gameObject);
-                }
-            }*/
-            if (other.CompareTag("DroppedItem"))
-            {
-                var otherDroppedItem = other.GetComponent<DroppedItem>();
-                if (Item != null && otherDroppedItem.Item != null)
-                    if (otherDroppedItem.Item.Item.Name == Item.Item.Name)
-                    {
-                        if (otherDroppedItem._spawnTime < _spawnTime && Item.Amount > 0)
-                        {
-                            Item.Amount--;
-                            otherDroppedItem.Item.Amount++;
-                            Destroy(gameObject);
-                        }
-                    }
-            }
+            
+            if (!other.CompareTag("DroppedItem")) return;
+            
+            var otherDroppedItem = other.GetComponent<DroppedItem>();
+            if (Item == null || otherDroppedItem == null) return;
+            
+            if (otherDroppedItem.Item?.Item == null) return;
+            if (otherDroppedItem.Item.Item.Name != Item.Item.Name) return;
+            if (!(otherDroppedItem._spawnTime < _spawnTime) || Item.Amount <= 0) return;
+            
+            Item.Amount--;
+            otherDroppedItem.Item.Amount++;
+            Destroy(gameObject);
         }
     }
 }

@@ -52,6 +52,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         public ConcurrentQueue<Vector3Int> ChunksToRender;
         public ConcurrentQueue<Vector3Int> ChunksToGet;
+        public HashSet<Vector3Int> RenderedChunks;
         public HashSet<Vector3Int> RequestedChunks;
         public HashSet<Vector3Int> SpawnedChunks;
         public HashSet<Vector3Int> GettedChunks;
@@ -80,6 +81,7 @@ namespace MultiCraft.Scripts.Engine.Network
             Instance = this;
 
             ChunksToRender = new ConcurrentQueue<Vector3Int>();
+            RenderedChunks = new HashSet<Vector3Int>();
             ChunksToGet = new ConcurrentQueue<Vector3Int>();
             RequestedChunks = new HashSet<Vector3Int>();
             SpawnedChunks = new HashSet<Vector3Int>();
@@ -171,21 +173,21 @@ namespace MultiCraft.Scripts.Engine.Network
 
             if (ChunksToRender.TryDequeue(out chunkPosition))
             {
-                
-                if (SpawnedChunks.Contains(chunkPosition + Vector3Int.left) &&
-                    SpawnedChunks.Contains(chunkPosition + Vector3Int.right) &&
-                    SpawnedChunks.Contains(chunkPosition + Vector3Int.forward) &&
-                    SpawnedChunks.Contains(chunkPosition + Vector3Int.back))
-                {
-                    Debug.Log($"[Client] Chunk rendered: {chunkPosition}");
-                    StartCoroutine(NetworkWorld.Instance.RenderChunks(chunkPosition));
-                    StartCoroutine(NetworkWorld.Instance.RenderWaterChunks(chunkPosition));
-                    StartCoroutine(NetworkWorld.Instance.RenderFloraChunks(chunkPosition));
-                }
-                else
-                {
-                    ChunksToRender.Enqueue(chunkPosition);
-                }
+                if (!RenderedChunks.Contains(chunkPosition))
+                    if (SpawnedChunks.Contains(chunkPosition + Vector3Int.left) &&
+                        SpawnedChunks.Contains(chunkPosition + Vector3Int.right) &&
+                        SpawnedChunks.Contains(chunkPosition + Vector3Int.forward) &&
+                        SpawnedChunks.Contains(chunkPosition + Vector3Int.back))
+                    {
+                        RenderedChunks.Add(chunkPosition);
+                        StartCoroutine(NetworkWorld.Instance.RenderChunks(chunkPosition));
+                        StartCoroutine(NetworkWorld.Instance.RenderWaterChunks(chunkPosition));
+                        StartCoroutine(NetworkWorld.Instance.RenderFloraChunks(chunkPosition));
+                    }
+                    else
+                    {
+                        ChunksToRender.Enqueue(chunkPosition);
+                    }
             }
 
             if (!_player)
@@ -212,6 +214,7 @@ namespace MultiCraft.Scripts.Engine.Network
             RequestedChunks.Remove(chunkPosition);
             SpawnedChunks.Remove(chunkPosition);
             GettedChunks.Remove(chunkPosition);
+            RenderedChunks.Remove(chunkPosition);
             yield return null;
         }
 
@@ -512,7 +515,13 @@ namespace MultiCraft.Scripts.Engine.Network
 
                 foreach (var entity in entities)
                 {
-                    if (_animals.ContainsKey(entity.ID)) continue;
+                    if (_animals.TryGetValue(entity.ID, out var animalFromList))
+                    {
+                        if (!animalFromList)
+                            continue;
+                        _animals.Remove(entity.ID);
+                    }
+                    
                     if (!ChunkSpawned(entity.Position)) continue;
                     var animal = Instantiate(animalPrefab,
                         entity.Position + new Vector3(
@@ -557,7 +566,7 @@ namespace MultiCraft.Scripts.Engine.Network
             yield return StartCoroutine(Blocks(blocksJson, result => blocks = result));
             yield return StartCoroutine(Blocks(waterBlocksJson, result => waterBlocks = result));
             yield return StartCoroutine(Blocks(floraBlocksJson, result => floraBlocks = result));
-            
+
             yield return NetworkWorld.Instance.SpawnChunk(chunkCoord, blocks);
             yield return NetworkWorld.Instance.SpawnWaterChunk(chunkCoord, waterBlocks);
             yield return NetworkWorld.Instance.SpawnFloraChunk(chunkCoord, floraBlocks);
