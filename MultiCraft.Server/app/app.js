@@ -57,7 +57,6 @@ wss.on('connection', (socket) => {
     socket.on('message', (message) => {
         try {
             const data = parseJsonSafely(message);
-            console.log(data);
             handleClientMessage(data, socket);
         } catch (error) {
             console.error('Ошибка при обработке сообщения:', error);
