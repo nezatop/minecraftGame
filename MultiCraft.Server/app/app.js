@@ -56,7 +56,7 @@ setInterval(broadcastTime, 250);
 wss.on('connection', (socket) => {
     socket.on('message', (message) => {
         try {
-            const data = JSON.parse(message);
+            const data = parseJsonSafely(message);
             handleClientMessage(data, socket);
         } catch (error) {
             console.error('Ошибка при обработке сообщения:', error);
@@ -77,6 +77,35 @@ wss.on('connection', (socket) => {
         clients.delete(socket);
     });
 });
+
+function parseJsonSafely(message) {
+    // Проверяем, что входные данные - строка
+    if (typeof message !== 'string') {
+        console.error('Invalid JSON: Input is not a string');
+        return null;
+    }
+
+    try {
+        const data = JSON.parse(message);
+
+        // Дополнительная проверка структуры данных (если нужно)
+        if (!isValidData(data)) {
+            console.error('Parsed JSON has invalid structure');
+            return null;
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Invalid JSON:', error.message);
+        return null;
+    }
+}
+
+// Пример функции проверки структуры данных (можно кастомизировать)
+function isValidData(data) {
+    return data !== null && typeof data === 'object' && !Array.isArray(data);
+}
+
 
 // Запуск сервера
 server.listen(PORT, () => {

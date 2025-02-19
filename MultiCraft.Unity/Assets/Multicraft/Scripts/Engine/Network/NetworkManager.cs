@@ -168,17 +168,22 @@ namespace MultiCraft.Scripts.Engine.Network
                 }
             }
 
-            if (ChunksToGet.Count > 0 && !_player) return;
-            if (_requestedChunks > 0 && !_player) return;
+            if(!_player)
+            {
+                if (ChunksToGet.Count > 0 && !_player) return;
+                if (_requestedChunks > 0 && !_player) return;
+            }
 
             if (ChunksToRender.TryDequeue(out chunkPosition))
             {
+                LogDebug($"[Client] Try rendering chunk {chunkPosition}");
                 if (!RenderedChunks.Contains(chunkPosition))
                     if (SpawnedChunks.Contains(chunkPosition + Vector3Int.left) &&
                         SpawnedChunks.Contains(chunkPosition + Vector3Int.right) &&
                         SpawnedChunks.Contains(chunkPosition + Vector3Int.forward) &&
                         SpawnedChunks.Contains(chunkPosition + Vector3Int.back))
                     {
+                        LogDebug($"[Client] Rendering chunk {chunkPosition}");
                         RenderedChunks.Add(chunkPosition);
                         StartCoroutine(NetworkWorld.Instance.RenderChunks(chunkPosition));
                         StartCoroutine(NetworkWorld.Instance.RenderWaterChunks(chunkPosition));
@@ -515,13 +520,8 @@ namespace MultiCraft.Scripts.Engine.Network
 
                 foreach (var entity in entities)
                 {
-                    if (_animals.TryGetValue(entity.ID, out var animalFromList))
-                    {
-                        if (!animalFromList)
-                            continue;
-                        _animals.Remove(entity.ID);
-                    }
-                    
+                    if(_animals.ContainsKey(entity.ID))
+                        continue;
                     if (!ChunkSpawned(entity.Position)) continue;
                     var animal = Instantiate(animalPrefab,
                         entity.Position + new Vector3(
@@ -932,7 +932,7 @@ namespace MultiCraft.Scripts.Engine.Network
             string message = $"[{type}] {logString}\n{stackTrace}\n";
             logMessages.Add(message);
         }
-
+        
         public void SendBugReport(string text)
         {
             try
@@ -1023,6 +1023,7 @@ namespace MultiCraft.Scripts.Engine.Network
                     logs = logMessages // Добавляем логи в сообщение
                 };
 
+                logMessages.Clear();
                 // Отправляем сообщение на сервер
                 SendMessageToServer(message);
             }
@@ -1124,6 +1125,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void LogDebug(string message)
         {
+            HandleLog(message, "", LogType.Log);
             if (enableLogging)
             {
                 Debug.Log(message);
@@ -1132,6 +1134,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void LogWarning(string message)
         {
+            HandleLog(message, "", LogType.Warning);
             if (enableLogging)
             {
                 Debug.LogWarning(message);
@@ -1140,6 +1143,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void LogError(string message)
         {
+            HandleLog(message, "", LogType.Error);
             if (enableLogging)
             {
                 Debug.LogError(message);
