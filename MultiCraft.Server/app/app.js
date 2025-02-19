@@ -80,13 +80,7 @@ wss.on('connection', (socket) => {
 });
 
 function parseJsonSafely(message) {
-    // Проверяем, что входные данные - строка
-    if (typeof message !== 'string') {
-        console.error('Invalid JSON: Input is not a string');
-        return null;
-    }
-
-    try {
+        try {
         const data = JSON.parse(message);
 
         // Дополнительная проверка структуры данных (если нужно)
