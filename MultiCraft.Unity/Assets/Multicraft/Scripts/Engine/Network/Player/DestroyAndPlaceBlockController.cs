@@ -220,14 +220,11 @@ namespace MultiCraft.Scripts.Engine.Network.Player
             var blockPosition = hitInfo.point - hitInfo.normal * 0.5f;
 
             var block = NetworkWorld.Instance.GetBlockAtPosition(blockPosition);
-            if (block.HaveInventory)
-            {
-                NetworkWorld.Instance.GetInventory(Vector3Int.FloorToInt(blockPosition));
-                GetComponentInParent<InteractController>().DisableScripts();
-                return true;
-            }
-
-            return false;
+            if (block is not { HaveInventory: true }) return false;
+            
+            NetworkWorld.Instance.GetInventory(Vector3Int.FloorToInt(blockPosition));
+            GetComponentInParent<InteractController>().DisableScripts();
+            return true;
         }
 
         public void TryEatItem()

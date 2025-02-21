@@ -94,13 +94,16 @@ namespace MultiCraft.Scripts.Engine.Network
             {
                 playerName = Guid.NewGuid().ToString();
             }
-            else
+
             {
                 playerName = YG2.player.name;
             }
 
             _playerPassword = Guid.NewGuid().ToString();
-
+            
+#if UNITY_EDITOR
+            serverAddress = "ws://localhost:8080";
+#endif
             _webSocket = new WebSocket(serverAddress);
 
             _webSocket.OnOpen += OnOpen;
@@ -168,7 +171,7 @@ namespace MultiCraft.Scripts.Engine.Network
                 }
             }
 
-            if(!_player)
+            if (!_player)
             {
                 if (ChunksToGet.Count > 0 && !_player) return;
                 if (_requestedChunks > 0 && !_player) return;
@@ -520,7 +523,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
                 foreach (var entity in entities)
                 {
-                    if(_animals.ContainsKey(entity.ID))
+                    if (_animals.ContainsKey(entity.ID))
                         continue;
                     if (!ChunkSpawned(entity.Position)) continue;
                     var animal = Instantiate(animalPrefab,
@@ -932,7 +935,7 @@ namespace MultiCraft.Scripts.Engine.Network
             string message = $"[{type}] {logString}\n{stackTrace}\n";
             logMessages.Add(message);
         }
-        
+
         public void SendBugReport(string text)
         {
             try

@@ -264,7 +264,7 @@ function handleGetChunk(position, socket) {
         })
 }
 
-function handleMove(position, rotation, velocity, socket) {
+async function handleMove(position, rotation, velocity, socket) {
     const clientId = clients.get(socket);
     if (clientId && playerData.has(clientId)) {
         playerData.get(clientId).position = position;
@@ -280,7 +280,7 @@ function handleMove(position, rotation, velocity, socket) {
 }
 
 // Обновление блока в чанк
-function updateBlock(position, blockType, socket) {
+async function updateBlock(position, blockType, socket) {
     const chunkPosition = getChunkContainingBlock(position);
     const chunkKey = `${chunkPosition.x},${chunkPosition.y},${chunkPosition.z}`;
 
@@ -392,9 +392,15 @@ export function sendMessage(socket, data) {
 }
 
 export function broadcast(data) {
+    for(const [client] of clients){
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(data);
+        }
+    }
+/*
     clients.forEach((_, client) => {
         if (client.readyState === WebSocket.OPEN) {
             client.send(data);
         }
-    });
+    });*/
 }

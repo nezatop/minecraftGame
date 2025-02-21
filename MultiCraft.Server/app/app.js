@@ -54,7 +54,7 @@ setInterval(broadcastTime, 250);
 
 // Обработка подключения WebSocket
 wss.on('connection', (socket) => {
-    socket.on('message', (message) => {
+    socket.on('message', async (message) => {
         try {
             const data = parseJsonSafely(message);
             handleClientMessage(data, socket);
