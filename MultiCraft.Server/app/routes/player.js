@@ -1,4 +1,4 @@
-import { playerData } from '../utils/storage.js';
+import {loadPlayerByLogin, playerData, savePlayer} from '../utils/storage.js';
 import {
     clients
     , createChunk
@@ -116,10 +116,36 @@ function handleRespawn(playerName, socket) {
 }
 
 function handleDisconnect(data, socket) {
-    broadcast(JSON.stringify({
-        type: 'player_disconnected'
-        , player_id: data.player
-    }));
+    try {
+        console.log('Disconnect data:', data);
+
+        // Парсим инвентарь из строки в массив
+        const inventory = JSON.parse(data.inventory);
+
+        // Обновляем данные игрока
+        if(playerData.has(data.player)) {
+            const player = playerData.get(data.player);
+            player.position = data.position;
+            player.rotation = data.rotation;
+            player.inventory = inventory;
+
+
+            savePlayer(data.player);
+        }
+
+        sendMessage(socket, {
+            type: 'disconnected'
+        });
+
+        broadcast(JSON.stringify({
+            type: 'player_disconnected',
+            player_id: data.player
+        }));
+
+    } catch (error) {
+        console.error('Disconnect handling error:', error);
+        // Можно добавить повторную попытку сохранения
+    }
 }
 
 function handleDropInventory(data, socket) {
@@ -179,30 +205,57 @@ function handleSetInventory(position, inventory, socket) {
 }
 
 function handleConnect(data, socket) {
-    const { login, password } = data;
+    try {
+        const { login, password } = data;
 
-    if (playerData.has(login)) {
-        const playerInfo = playerData.get(login);
+        let playerInfo = playerData.get(login);
+
+        if (!playerInfo) {
+            playerInfo = loadPlayerByLogin(login);
+        }
+
+        if (playerInfo) {
+            sendMessage(socket, {
+                type: 'connected',
+                position: playerInfo.position,
+                rotation: playerInfo.rotation,
+                inventory: playerInfo.inventory
+            });
+        } else {
+            const startPosition = getRandomSurfacePosition();
+            playerInfo = new PlayerData(
+                login,
+                "",
+                startPosition,
+                { x: 0, y: 0, z: 0 }
+            );
+
+            playerData.set(login, playerInfo);
+            savePlayer(login);
+
+            sendMessage(socket, {
+                type: 'connected',
+                position: startPosition,
+                rotation: playerInfo.rotation,
+                inventory: playerInfo.inventory
+            });
+        }
+
+        clients.set(socket, login);
+        broadcast(JSON.stringify({
+            type: 'player_connected',
+            player_id: login,
+            position: playerData.get(login).position
+        }));
+
+    } catch (error) {
+        console.error(`Connection error: ${error.message}`);
         sendMessage(socket, {
-            type: 'connected'
-            , position: playerInfo.position
-            , rotation: playerInfo.rotation
-            , inventory: playerInfo.inventory
+            type: 'connection_error',
+            message: error.message
         });
-    } else {
-        const startPosition = getRandomSurfacePosition();
-        playerData.set(login, new PlayerData(login, password, startPosition, { x: 0, y: 0, z: 0 }));
-
-        socket.send(JSON.stringify({
-            type: 'connected'
-            , position: startPosition
-            , rotation: { x: 0, y: 0, z: 0 }
-            , inventory: createInventory()
-            }));
+        socket.close();
     }
-
-    clients.set(socket, login);
-    /*broadcast(JSON.stringify({ type: 'player_connected', player_id: login, position: playerData.get(login).position }));*/
 }
 
 function handlePlayers(socket) {

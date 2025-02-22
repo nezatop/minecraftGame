@@ -49,6 +49,7 @@ namespace MultiCraft.Scripts.Engine.Network
         private GameObject _player;
         private PlayerController _playerController;
         private Vector3 _playerPosition;
+        private List<ItemInSlot> _playerInventory;
 
         public ConcurrentQueue<Vector3Int> ChunksToRender;
         public ConcurrentQueue<Vector3Int> ChunksToGet;
@@ -100,7 +101,7 @@ namespace MultiCraft.Scripts.Engine.Network
             }
 
             _playerPassword = Guid.NewGuid().ToString();
-            
+
 #if UNITY_EDITOR
             serverAddress = "ws://localhost:8080";
 #endif
@@ -127,7 +128,6 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void OnClose(object sender, CloseEventArgs e)
         {
-            DisconnectPlayer();
             SceneManager.LoadScene("MainMenu");
             LogDebug($"[Client] Connection closed. Reason: {e.Reason}");
         }
@@ -140,8 +140,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private void OnApplicationQuit()
         {
-            DisconnectPlayer();
-            _webSocket?.CloseAsync();
+            CloseNetwork();
         }
 
         void OnEnable()
@@ -171,12 +170,14 @@ namespace MultiCraft.Scripts.Engine.Network
                 }
             }
 
-            if (!_player)
+            /*
+             if (!_player)
             {
                 if (ChunksToGet.Count > 0 && !_player) return;
                 if (_requestedChunks > 0 && !_player) return;
             }
-
+            */
+            
             if (ChunksToRender.TryDequeue(out chunkPosition))
             {
                 LogDebug($"[Client] Try rendering chunk {chunkPosition}");
@@ -203,10 +204,23 @@ namespace MultiCraft.Scripts.Engine.Network
                     (NetworkWorld.Instance.settings.viewDistanceInChunks * 2 + 1))
                     return;
 
+            if (!_player && 
+                RenderedChunks.Contains(Vector3Int.back + NetworkWorld.Instance.GetChunkContainBlock(Vector3Int.FloorToInt(_playerPosition))) &&
+                RenderedChunks.Contains(Vector3Int.forward + NetworkWorld.Instance.GetChunkContainBlock(Vector3Int.FloorToInt(_playerPosition))) &&
+                RenderedChunks.Contains(Vector3Int.right + NetworkWorld.Instance.GetChunkContainBlock(Vector3Int.FloorToInt(_playerPosition))) &&
+                RenderedChunks.Contains(Vector3Int.left + NetworkWorld.Instance.GetChunkContainBlock(Vector3Int.FloorToInt(_playerPosition))) &&
+                RenderedChunks.Contains(NetworkWorld.Instance.GetChunkContainBlock(Vector3Int.FloorToInt(_playerPosition)))
+                )
+            {
+                OnAllChunksLoaded();
+            }
+            
+            /*
             if (!_player && canSpawnPlayer && ChunksToRender.Count <= 0)
             {
                 OnAllChunksLoaded();
             }
+            */
         }
 
         private void OnDestroy()
@@ -217,6 +231,11 @@ namespace MultiCraft.Scripts.Engine.Network
             _webSocket.CloseAsync();
         }
 
+        public void CloseNetwork()
+        {
+            DisconnectPlayer();
+        }
+        
         public IEnumerator DestroyChunk(Vector3Int chunkPosition)
         {
             RequestedChunks.Remove(chunkPosition);
@@ -244,6 +263,10 @@ namespace MultiCraft.Scripts.Engine.Network
 
                     case "time":
                         HandleTime(message.RootElement);
+                        break;
+                    
+                    case "disconnected":
+                        HandleDisconnected(message.RootElement);
                         break;
 
                     case "damage":
@@ -319,17 +342,56 @@ namespace MultiCraft.Scripts.Engine.Network
 
         public void DisconnectPlayer()
         {
-            SendMessageToServer(new { type = "disconnect", player = playerName });
+            if (!_player)
+                return;
+
+            var slots = _playerController.inventory.Slots ?? _playerInventory;
+            var inventoryJson = JsonSerializer.Serialize(
+                slots
+                    .Where(slot => slot != null) // Фильтруем null-слоты
+                    .Select(slot => new ItemJson 
+                    {
+                        Type = slot.Item != null ? slot.Item.Name : "null",
+                        Count = slot.Amount,
+                        Durability = slot.Durability
+                    })
+                    .ToList()
+            );
+            SendMessageToServer(new
+            {
+                type = "disconnect",
+                player = playerName,
+                position = new
+                {
+                    x = _player.transform.position.x,
+                    y = _player.transform.position.y,
+                    z = _player.transform.position.z
+                },
+                rotation = new
+                {
+                    x = _player.transform.rotation.eulerAngles.x,
+                    y = _player.transform.rotation.eulerAngles.y,
+                    z = _player.transform.rotation.eulerAngles.z
+                },
+                inventory = inventoryJson,
+            });
         }
 
         private void HandleTime(JsonElement data)
         {
-            _targetTime = data.GetProperty("time").GetSingle(); // Получаем новое время
+            _targetTime = data.GetProperty("time").GetSingle();
+        }
+        private void HandleDisconnected(JsonElement data)
+        {
+            _webSocket?.CloseAsync();
         }
 
         private void OnConnected(JsonElement data)
         {
+            LogDebug(data.ToString());
             Vector3 position = JsonToVector3Safe(data, "position");
+            Vector3 rotation = JsonToVector3Safe(data, "rotation");
+            _playerInventory = JsonToInventory(data.GetProperty("inventory"));
             _playerPosition = position;
             NetworkWorld.Instance.currentPosition = Vector3Int.FloorToInt(_playerPosition);
             RequestChunksAtStart(position);
@@ -641,15 +703,48 @@ namespace MultiCraft.Scripts.Engine.Network
 
             int loadDistance = NetworkWorld.Instance.settings.loadDistance;
 
-            for (int x = -loadDistance; x <= loadDistance; x++)
+            for (int d = 0; d <= loadDistance; d++)
             {
-                for (int z = -loadDistance; z <= loadDistance; z++)
+                // Top and bottom rows
+                for (int x = -d; x <= d; x++)
                 {
+                    // Top row (z = +d)
                     ChunksToGet.Enqueue(new Vector3Int(
                         playerChunkPosition.x + x,
                         0,
+                        playerChunkPosition.z + d
+                    ));
+        
+                    // Bottom row (z = -d) except for d=0
+                    if(d > 0)
+                    {
+                        ChunksToGet.Enqueue(new Vector3Int(
+                            playerChunkPosition.x + x,
+                            0,
+                            playerChunkPosition.z - d
+                        ));
+                    }
+                }
+
+                // Left and right columns (excluding corners already added)
+                for (int z = -d + 1; z <= d - 1; z++)
+                {
+                    // Right column (x = +d)
+                    ChunksToGet.Enqueue(new Vector3Int(
+                        playerChunkPosition.x + d,
+                        0,
                         playerChunkPosition.z + z
                     ));
+        
+                    // Left column (x = -d) except for d=0
+                    if(d > 0)
+                    {
+                        ChunksToGet.Enqueue(new Vector3Int(
+                            playerChunkPosition.x - d,
+                            0,
+                            playerChunkPosition.z + z
+                        ));
+                    }
                 }
             }
 
@@ -674,7 +769,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
             _player = Instantiate(playerPrefab, _playerPosition + Vector3.up, Quaternion.identity);
             _playerController = _player.GetComponent<PlayerController>();
-
+            _playerController.Initialize();
             _playerController.variableJoystick = moveJoystick;
             _playerController.isMobile = IsMobile;
 
@@ -687,9 +782,9 @@ namespace MultiCraft.Scripts.Engine.Network
             NetworkWorld.Instance.player = _player;
 
             _playerController.health.OnDeath += OpenDeadMenu;
-
             UiManager.Instance.PlayerController = _playerController;
             UiManager.Instance.Initialize();
+            _playerController.inventory.Initialize(_playerInventory);
             UiManager.Instance.CloseLoadingScreen();
 
             foreach (var otherPlayers in _otherPlayers.Values)
@@ -763,7 +858,7 @@ namespace MultiCraft.Scripts.Engine.Network
 
         public void SetInventory(Vector3Int chestPosition, List<ItemInSlot> slots)
         {
-            var slotsJson = JsonToInventory(slots);
+            var slotsJson = InventoryToJson(slots);
 
             SendMessageToServer(new
             {
@@ -792,7 +887,7 @@ namespace MultiCraft.Scripts.Engine.Network
         private void SendDropInventory()
         {
             var inventory = _playerController.GetComponent<Inventory>().Slots;
-            var json = JsonToInventory(inventory);
+            var json = InventoryToJson(inventory);
             SendMessageToServer(new
             {
                 type = "drop_inventory",
@@ -819,7 +914,7 @@ namespace MultiCraft.Scripts.Engine.Network
             );
         }
 
-        private string JsonToInventory(List<ItemInSlot> slots)
+        private string InventoryToJson(List<ItemInSlot> slots)
         {
             List<ItemJson> slotsJson = new List<ItemJson>();
 
@@ -862,9 +957,9 @@ namespace MultiCraft.Scripts.Engine.Network
 
             try
             {
-                if (json.ValueKind == JsonValueKind.String)
-                {
-                    string jsonString = json.GetString();
+                if (json.ValueKind == JsonValueKind.Array)
+                { 
+                    string jsonString = json.GetRawText();
                     var items = JsonSerializer.Deserialize<List<ItemJson>>(jsonString);
 
                     foreach (var itemJson in items)
@@ -873,7 +968,9 @@ namespace MultiCraft.Scripts.Engine.Network
                         {
                             Amount = itemJson.Count,
                             Durability = itemJson.Durability,
-                            Item = itemJson.Type != "null" ? ResourceLoader.Instance.GetItem(itemJson.Type) : null
+                            Item = !string.IsNullOrEmpty(itemJson.Type) && itemJson.Type != "null" 
+                                ? ResourceLoader.Instance.GetItem(itemJson.Type) 
+                                : null
                         };
 
                         inventory.Add(item);
@@ -1091,6 +1188,7 @@ namespace MultiCraft.Scripts.Engine.Network
         private void SendMessageToServer(object message)
         {
             string jsonMessage = JsonSerializer.Serialize(message);
+            LogDebug(jsonMessage);
             _webSocket.SendAsync(Encoding.UTF8.GetBytes(jsonMessage));
         }
 

@@ -632,7 +632,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b973f741d3414223b0b387c21df230be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enableLogging: 0
+  enableLogging: 1
   playerPrefab: {fileID: 3874808127795487834, guid: e5c5eeef3fc64e04c92c8955924d35a2, type: 3}
   otherPlayerPrefab: {fileID: 7056010270576457223, guid: 74c49b3adc43ad64da94b0cfafe07e9a, type: 3}
   animalPrefab: {fileID: 7618816118743565708, guid: f5c0099c91ee22c4e8203f5af21a7554, type: 3}
@@ -806,8 +806,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   settings:
-    viewDistanceInChunks: 5
-    loadDistance: 6
+    viewDistanceInChunks: 2
+    loadDistance: 3
   chunkPrefab: {fileID: 6950558421887607551, guid: a313ccba8d75ac74a84e6851abdc7ed5, type: 3}
   waterChunkPrefab: {fileID: 6133701986684697518, guid: 78d2594e4cc949e4a9b917c0ecc2955d, type: 3}
   floraChunkPrefab: {fileID: 2767855893500059531, guid: 0106e4a14b0bc554aa8349b9da243714, type: 3}

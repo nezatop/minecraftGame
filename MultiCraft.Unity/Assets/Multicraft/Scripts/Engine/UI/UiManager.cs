@@ -348,7 +348,7 @@ namespace MultiCraft.Scripts.Engine.UI
 
         public void MainMenu()
         {
-            SceneManager.LoadScene("MainMenu");
+            NetworkManager.Instance.CloseNetwork();
         }
         
         public void SendBugReport(TMP_InputField inputField)

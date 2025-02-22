@@ -16,6 +16,12 @@ logs/
 *.gz
 *.out
 
+chunks/
+
+SavedPlayers/
+
+entities.json
+
 # Testing
 /coverage/
 

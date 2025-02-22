@@ -14,12 +14,6 @@ namespace MultiCraft.Scripts.Engine.Core.Inventories
         public List<ItemInSlot> Slots;
         public int HotBarSelectedSlot = 0;
         private bool _init = false;
-
-        private void Start()
-        {
-            Initialize();
-        }
-
         private void Update()
         {
             if (UiManager.Instance.inventoryUpdated == true)
@@ -31,7 +25,7 @@ namespace MultiCraft.Scripts.Engine.Core.Inventories
             }
         }
 
-        private void Initialize()
+        public void Initialize()
         {
             Slots = new List<ItemInSlot>();
             for (int i = 0; i < 9 * 4; i++)
@@ -53,6 +47,14 @@ namespace MultiCraft.Scripts.Engine.Core.Inventories
                     }
                 }
             }
+            UiManager.Instance.UpdateInventory(Slots);
+        }
+        
+        public void Initialize(List<ItemInSlot> slots)
+        {
+            Slots = slots;
+            _init = true;
+
             UiManager.Instance.UpdateInventory(Slots);
         }
 

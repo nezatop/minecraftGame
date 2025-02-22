@@ -67,7 +67,8 @@ namespace MultiCraft.Scripts.Engine.Core.Player
         
         public float horizontalInput;
         public float verticalInput;
-        private void Start()
+        
+        public void Initialize()
         {
             _destroyAndPlaceBlockController = cameraController.gameObject.GetComponent<DestroyAndPlaceBlockController>();
             _destroyAndPlaceBlockControllerNetwork = cameraController.gameObject.GetComponent<Network.Player.DestroyAndPlaceBlockController>();
