@@ -210,11 +210,14 @@ function handleConnect(data, socket) {
 
         let playerInfo = playerData.get(login);
 
-        if (!playerInfo) {
+        if (!playerInfo)
+        {
             playerInfo = loadPlayerByLogin(login);
         }
 
         if (playerInfo) {
+            if(playerInfo.position.y < -1)
+                playerInfo.position = getRandomSurfacePosition();
             sendMessage(socket, {
                 type: 'connected',
                 position: playerInfo.position,

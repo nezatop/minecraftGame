@@ -177,7 +177,7 @@ namespace MultiCraft.Scripts.Engine.Network
                 if (_requestedChunks > 0 && !_player) return;
             }
             */
-            
+
             if (ChunksToRender.TryDequeue(out chunkPosition))
             {
                 LogDebug($"[Client] Try rendering chunk {chunkPosition}");
@@ -204,17 +204,26 @@ namespace MultiCraft.Scripts.Engine.Network
                     (NetworkWorld.Instance.settings.viewDistanceInChunks * 2 + 1))
                     return;
 
-            if (!_player && 
-                RenderedChunks.Contains(Vector3Int.back + NetworkWorld.Instance.GetChunkContainBlock(Vector3Int.FloorToInt(_playerPosition))) &&
-                RenderedChunks.Contains(Vector3Int.forward + NetworkWorld.Instance.GetChunkContainBlock(Vector3Int.FloorToInt(_playerPosition))) &&
-                RenderedChunks.Contains(Vector3Int.right + NetworkWorld.Instance.GetChunkContainBlock(Vector3Int.FloorToInt(_playerPosition))) &&
-                RenderedChunks.Contains(Vector3Int.left + NetworkWorld.Instance.GetChunkContainBlock(Vector3Int.FloorToInt(_playerPosition))) &&
-                RenderedChunks.Contains(NetworkWorld.Instance.GetChunkContainBlock(Vector3Int.FloorToInt(_playerPosition)))
-                )
+            if (!_player &&
+                RenderedChunks.Contains(Vector3Int.back +
+                                        NetworkWorld.Instance.GetChunkContainBlock(
+                                            Vector3Int.FloorToInt(_playerPosition))) &&
+                RenderedChunks.Contains(Vector3Int.forward +
+                                        NetworkWorld.Instance.GetChunkContainBlock(
+                                            Vector3Int.FloorToInt(_playerPosition))) &&
+                RenderedChunks.Contains(Vector3Int.right +
+                                        NetworkWorld.Instance.GetChunkContainBlock(
+                                            Vector3Int.FloorToInt(_playerPosition))) &&
+                RenderedChunks.Contains(Vector3Int.left +
+                                        NetworkWorld.Instance.GetChunkContainBlock(
+                                            Vector3Int.FloorToInt(_playerPosition))) &&
+                RenderedChunks.Contains(
+                    NetworkWorld.Instance.GetChunkContainBlock(Vector3Int.FloorToInt(_playerPosition)))
+               )
             {
                 OnAllChunksLoaded();
             }
-            
+
             /*
             if (!_player && canSpawnPlayer && ChunksToRender.Count <= 0)
             {
@@ -235,7 +244,7 @@ namespace MultiCraft.Scripts.Engine.Network
         {
             DisconnectPlayer();
         }
-        
+
         public IEnumerator DestroyChunk(Vector3Int chunkPosition)
         {
             RequestedChunks.Remove(chunkPosition);
@@ -264,7 +273,7 @@ namespace MultiCraft.Scripts.Engine.Network
                     case "time":
                         HandleTime(message.RootElement);
                         break;
-                    
+
                     case "disconnected":
                         HandleDisconnected(message.RootElement);
                         break;
@@ -346,17 +355,31 @@ namespace MultiCraft.Scripts.Engine.Network
                 return;
 
             var slots = _playerController.inventory.Slots ?? _playerInventory;
+
             var inventoryJson = JsonSerializer.Serialize(
-                slots
-                    .Where(slot => slot != null) // Фильтруем null-слоты
-                    .Select(slot => new ItemJson 
+                slots.Select(slot =>
+                {
+                    // Если слот существует
+                    if (slot != null)
                     {
-                        Type = slot.Item != null ? slot.Item.Name : "null",
-                        Count = slot.Amount,
-                        Durability = slot.Durability
-                    })
-                    .ToList()
+                        return new ItemJson
+                        {
+                            Type = slot.Item?.Name ?? "null",
+                            Count = slot.Amount,
+                            Durability = slot.Durability
+                        };
+                    }
+
+                    // Если слот null
+                    return new ItemJson
+                    {
+                        Type = "null",
+                        Count = 0,
+                        Durability = 0
+                    };
+                }).ToList()
             );
+
             SendMessageToServer(new
             {
                 type = "disconnect",
@@ -381,6 +404,7 @@ namespace MultiCraft.Scripts.Engine.Network
         {
             _targetTime = data.GetProperty("time").GetSingle();
         }
+
         private void HandleDisconnected(JsonElement data)
         {
             _webSocket?.CloseAsync();
@@ -714,9 +738,9 @@ namespace MultiCraft.Scripts.Engine.Network
                         0,
                         playerChunkPosition.z + d
                     ));
-        
+
                     // Bottom row (z = -d) except for d=0
-                    if(d > 0)
+                    if (d > 0)
                     {
                         ChunksToGet.Enqueue(new Vector3Int(
                             playerChunkPosition.x + x,
@@ -735,9 +759,9 @@ namespace MultiCraft.Scripts.Engine.Network
                         0,
                         playerChunkPosition.z + z
                     ));
-        
+
                     // Left column (x = -d) except for d=0
-                    if(d > 0)
+                    if (d > 0)
                     {
                         ChunksToGet.Enqueue(new Vector3Int(
                             playerChunkPosition.x - d,
@@ -953,41 +977,69 @@ namespace MultiCraft.Scripts.Engine.Network
 
         private List<ItemInSlot> JsonToInventory(JsonElement json)
         {
+            const int targetInventorySize = 36;
             var inventory = new List<ItemInSlot>();
 
             try
             {
                 if (json.ValueKind == JsonValueKind.Array)
-                { 
+                {
                     string jsonString = json.GetRawText();
-                    var items = JsonSerializer.Deserialize<List<ItemJson>>(jsonString);
+                    var items = JsonSerializer.Deserialize<List<ItemJson>>(jsonString) ?? new List<ItemJson>();
 
-                    foreach (var itemJson in items)
+                    // Обрабатываем существующие элементы
+                    foreach (var itemJson in items.Take(targetInventorySize))
                     {
                         var item = new ItemInSlot
                         {
                             Amount = itemJson.Count,
                             Durability = itemJson.Durability,
-                            Item = !string.IsNullOrEmpty(itemJson.Type) && itemJson.Type != "null" 
-                                ? ResourceLoader.Instance.GetItem(itemJson.Type) 
+                            Item = !string.IsNullOrEmpty(itemJson.Type) && itemJson.Type != "null"
+                                ? ResourceLoader.Instance.GetItem(itemJson.Type)
                                 : null
                         };
-
                         inventory.Add(item);
+                    }
+
+                    // Добавляем недостающие элементы
+                    while (inventory.Count < targetInventorySize)
+                    {
+                        inventory.Add(new ItemInSlot
+                        {
+                            Amount = 0,
+                            Durability = 0,
+                            Item = null
+                        });
                     }
                 }
                 else
                 {
                     Debug.LogError($"Unexpected JSON ValueKind: {json.ValueKind}");
+                    // Создаем пустой инвентарь нужного размера
+                    inventory = CreateEmptyInventory(targetInventorySize);
                 }
             }
             catch (JsonException ex)
             {
                 Debug.LogError($"Failed to deserialize JSON: {ex.Message}");
                 Debug.LogError($"JSON content: {json}");
+                inventory = CreateEmptyInventory(targetInventorySize);
             }
 
-            return inventory;
+            // Гарантируем точный размер
+            return inventory.Take(targetInventorySize).ToList();
+        }
+
+        private List<ItemInSlot> CreateEmptyInventory(int size)
+        {
+            return Enumerable.Range(0, size)
+                .Select(_ => new ItemInSlot
+                {
+                    Amount = 0,
+                    Durability = 0,
+                    Item = null
+                })
+                .ToList();
         }
 
 
